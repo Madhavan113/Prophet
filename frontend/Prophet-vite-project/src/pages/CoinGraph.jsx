@@ -11,13 +11,16 @@ const MusicCryptoDashboard = () => {
     { time: '2024-02-02', price: 52 },
     { time: '2024-02-03', price: 55 },
     { time: '2024-02-04', price: 54 },
-    { time: '2024-02-05', price: 56 },
-    { time: '2024-02-06', price: 60 },
-    { time: '2024-02-07', price: 62 },
+    { time: '2024-02-05', price: 79 },
+    { time: '2024-02-06', price: 111 },
+    { time: '2024-02-07', price: 444 },
   ]);
 
   // Determine if the price has gone up or down
   const isProfitable = coinPriceData[coinPriceData.length - 1].price > coinPriceData[0].price;
+
+  // State for Buy/Sell actions
+  const [action, setAction] = useState(null);
 
   useEffect(() => {
     document.body.style.margin = '0';
@@ -32,6 +35,17 @@ const MusicCryptoDashboard = () => {
       document.body.style.backgroundColor = '';
     };
   }, []);
+
+  // Handlers for Buy and Sell buttons
+  const handleBuy = () => {
+    setAction('Buying');
+    console.log('User clicked Buy');
+  };
+
+  const handleSell = () => {
+    setAction('Selling');
+    console.log('User clicked Sell');
+  };
 
   return (
     <div className="fixed inset-0 min-h-screen w-full bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
@@ -101,6 +115,30 @@ const MusicCryptoDashboard = () => {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
+
+            {/* Action Buttons (Buy / Sell) */}
+            <div className="flex space-x-4 mt-6">
+  {/* Buy Button */}
+  <button
+    className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-300"
+  >
+    Buy
+  </button>
+
+  {/* Sell Button */}
+  <button
+    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-300"
+  >
+    Sell
+  </button>
+</div>
+
+            {/* Action Status */}
+            {action && (
+              <div className="mt-6 text-center text-white text-lg">
+                <p>{action} action initiated!</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
