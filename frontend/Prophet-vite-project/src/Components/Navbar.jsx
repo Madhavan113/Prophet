@@ -19,12 +19,12 @@ const Navbar = () => {
             </Link>
             <Link to="/about" className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
               <Activity className="w-5 h-5" />
-              <span>Markets</span>
+              <span>Portfolio</span>
             </Link>
-            <Link to="/profile" className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
+            {/*<Link to="/profile" className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
               <User className="w-5 h-5" />
               <span>Profile</span>
-            </Link>
+            </Link>*/}
           </div>
         </div>
       </div>
