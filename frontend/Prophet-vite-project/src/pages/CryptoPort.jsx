@@ -29,6 +29,7 @@ const PortfolioDashboard = () => {
   const [timeframe, setTimeframe] = useState('3M');
   const timeframes = {
     '3M': 90,
+
     '1Y': 365,
     '5Y': 1825,
     'ALL': 2555
