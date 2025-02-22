@@ -12,21 +12,21 @@ const Login = () => {
           <span className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
             Prophet
           </span>
-          <span className="mt-1 text-lg text-gray-300">Music Prediction Login</span>
+          <span className="mt-1 text-lg text-gray-300">Login</span>
         </div>
 
         <form className="space-y-6">
-          {/* Email Field */}
+          {/* Username Field (Replaces Email) */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-              Email Address
+            <label htmlFor="username" className="block text-sm font-medium text-gray-300">
+              Username
             </label>
             <div className="mt-1">
               <input
-                type="email"
-                id="email"
-                name="email"
-                autoComplete="email"
+                type="text"
+                id="username"
+                name="username"
+                autoComplete="username"
                 required
                 className="appearance-none block w-full px-3 py-2 border border-gray-500 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-purple-500 focus:border-purple-500"
               />
