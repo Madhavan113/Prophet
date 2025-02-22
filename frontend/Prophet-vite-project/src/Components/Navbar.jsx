@@ -19,6 +19,18 @@ const Navbar = () => {
             Prophet
           </Link>
 
+          {/* Middle - Markets tab */}
+          <Link
+            to="/markets"
+            className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent"
+            style={{
+              WebkitTextFillColor: 'transparent', // Forces the text to be transparent
+              textDecoration: 'none', // Removes default link styling
+            }}
+          >
+            Markets
+          </Link>
+
           {/* Right side - Profit with green-to-teal gradient */}
           <Link
             to="/about"
