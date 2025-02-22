@@ -31,6 +31,18 @@ const Navbar = () => {
             Markets
           </Link>
 
+          {/* Right side - Login Link */}
+          <Link
+            to="/login"
+            className="text-xl font-bold bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent"
+            style={{
+              WebkitTextFillColor: 'transparent', // Ensures the gradient is visible
+              textDecoration: 'none', // Removes default link styling
+            }}
+          >
+            Login
+          </Link>
+
           {/* Right side - Profit with green-to-teal gradient */}
           <Link
             to="/about"

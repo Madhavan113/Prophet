@@ -1,24 +1,22 @@
-// src/App.js
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './Components/Navbar';
 import Home from './pages/Landing.jsx';
-import testing from './pages/testing.jsx';
-// import About from './pages/About';
-// import Contact from './pages/Contact';
+import Markets from './pages/Markets.jsx';
+import Login from './pages/Login.jsx';
 
 function App() {
   return (
-    <div>
+    <Router>
       <Navbar />
-      <div style={{ padding: '1rem' }}>
+      <div style={{ padding: '1rem', paddingTop: '4rem' }}> {/* Adjust to avoid navbar overlap */}
         <Routes>
           <Route path="/" element={<Home />} />
-          {/* {/* <Route path="/about" element={<About />} /> */}
-          <Route path="/contact" element={<testing />} />
+          <Route path="/markets" element={<Markets />} />
+          <Route path="/login" element={<Login />} /> {/* Login Page */}
         </Routes>
       </div>
-    </div>
+    </Router>
   );
 }
 

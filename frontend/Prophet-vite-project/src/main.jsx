@@ -9,6 +9,7 @@ import Landing from './pages/Landing.jsx'; // Example page
 import testing from './pages/testing.jsx'; // Example page
 import Crypto from './pages/CryptoPort.jsx';
 import Markets from './pages/Markets.jsx';
+import Login from './pages/Login.jsx';
 import CoinGraph from './pages/CoinGraph.jsx';
 import './index.css';
 
@@ -25,6 +26,7 @@ root.render(
           <Route path="/" element={<Landing />} /> {/* Home page */}
           <Route path="/about" element={<Crypto />} /> 
           <Route path="/markets" element={<Markets />} /> 
+          <Route path="/login" element={<Login />} /> 
           <Route path="/coin-graph/:id" element={<CoinGraph />} />
           {/* <Route path="/settings" element={<Settings />} /> Settings page */}
           {/* <Route path="/profile" element={<Profile />} /> Profile page */}
