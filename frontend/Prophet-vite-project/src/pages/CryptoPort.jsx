@@ -18,12 +18,21 @@ const generateMockData = (days) => {
 };
 
 const mockHoldings = [
-  { coin: 'Bitcoin', symbol: 'BTC', amount: 0.45, value: 21345.67, change: 2.3 },
-  { coin: 'Ethereum', symbol: 'ETH', amount: 4.2, value: 8765.43, change: -1.2 },
-  { coin: 'Solana', symbol: 'SOL', amount: 65.0, value: 4532.10, change: 5.7 },
-  { coin: 'Cardano', symbol: 'ADA', amount: 2500.0, value: 2345.67, change: -0.8 },
-  { coin: 'Polkadot', symbol: 'DOT', amount: 150.0, value: 1987.54, change: 3.4 },
+  { coin: 'Taylor Swift', symbol: 'SWIFT', amount: (Math.random() * (3257 - 0.32) + 0.32).toFixed(2), value: 43567.89, change: 5.2 },
+  { coin: 'Drake', symbol: 'DRAKE', amount: (Math.random() * (3257 - 0.32) + 0.32).toFixed(2), value: 2890.45, change: 3.8 },
+  { coin: 'The Weeknd', symbol: 'WEEKND', amount: (Math.random() * (3257 - 0.32) + 0.32).toFixed(2), value: 189.67, change: 12.4 },
+  { coin: 'Beyoncé', symbol: 'BEY', amount: (Math.random() * (3257 - 0.32) + 0.32).toFixed(2), value: 1.23, change: -2.1 },
+  { coin: 'Ed Sheeran', symbol: 'SHEER', amount: (Math.random() * (3257 - 0.32) + 0.32).toFixed(2), value: 21.45, change: 7.8 },
+  { coin: 'BTS', symbol: 'BTS', amount: (Math.random() * (3257 - 0.32) + 0.32).toFixed(2), value: 34.56, change: 9.3 },
+  { coin: 'Olivia Rodrigo', symbol: 'RODRIGO', amount: (Math.random() * (3257 - 0.32) + 0.32).toFixed(2), value: 12.34, change: 25.6 },
+  { coin: 'Doja Cat', symbol: 'DOJA', amount: (Math.random() * (3257 - 0.32) + 0.32).toFixed(2), value: 45.67, change: 18.9 },
+  { coin: 'Bad Bunny', symbol: 'BUNNY', amount: (Math.random() * (3257 - 0.32) + 0.32).toFixed(2), value: 78.90, change: 15.3 },
+  { coin: 'Billie Eilish', symbol: 'EILISH', amount: (Math.random() * (3257 - 0.32) + 0.32).toFixed(2), value: 56.78, change: 22.1 },
+  { coin: 'Travis Scott', symbol: 'TRAVIS', amount: (Math.random() * (3257 - 0.32) + 0.32).toFixed(2), value: 34.56, change: 30.4 },
+  { coin: 'Ariana Grande', symbol: 'GRANDE', amount: (Math.random() * (3257 - 0.32) + 0.32).toFixed(2), value: 67.89, change: 20.7 }
 ];
+
+
 
 const PortfolioDashboard = () => {
   const [timeframe, setTimeframe] = useState('3M');
