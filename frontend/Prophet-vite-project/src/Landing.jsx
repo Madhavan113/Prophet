@@ -86,7 +86,7 @@ const CryptoDashboard = () => {
                   <div className={`w-2 h-16 rounded-full ${
                     index === 0 ? 'bg-yellow-400' :
                     index === 1 ? 'bg-gray-300' :
-                    index === 2 ? 'bg-amber-600' : 'bg-purple-400'
+                    index === 2 ?  'bg-amber-600' : 'bg-purple-400'
                   }`} />
                 </div>
               </div>
