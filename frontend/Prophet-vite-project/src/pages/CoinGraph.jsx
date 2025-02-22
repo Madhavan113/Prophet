@@ -115,23 +115,22 @@ const MusicCryptoDashboard = () => {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
+{/* Action Buttons (Buy / Sell) */}
+<div className="flex justify-center mt-8 space-x-4">
+              <button
+                onClick={handleBuy}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-300"
+              >
+                Buy
+              </button>
+              <button
+                onClick={handleSell}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-300"
+              >
+                Sell
+              </button>
+            </div>
 
-            {/* Action Buttons (Buy / Sell) */}
-            <div className="flex space-x-4 mt-6">
-  {/* Buy Button */}
-  <button
-    className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-300"
-  >
-    Buy
-  </button>
-
-  {/* Sell Button */}
-  <button
-    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-300"
-  >
-    Sell
-  </button>
-</div>
 
             {/* Action Status */}
             {action && (
