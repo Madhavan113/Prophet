@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Markets = () => {
+  const navigate = useNavigate(); // Hook to navigate between pages
+
   const [artistCoins] = useState([
     { 
       id: 1, 
@@ -104,6 +107,10 @@ const Markets = () => {
   const scrollRef1 = useRef();
   const scrollRef2 = useRef();
 
+  const handleCardClick = (symbol) => {
+    navigate(`/coin-graph/${symbol}`); // Navigate to the coin's graph page using symbol
+  };
+
   // Function to scroll left automatically
   useEffect(() => {
     const intervalId1 = setInterval(() => {
@@ -116,15 +123,13 @@ const Markets = () => {
           const clientWidth = scrollRef1.current.clientWidth;
 
           if (scrollLeft + clientWidth >= scrollWidth) {
-            // Reset to the beginning when the end is reached
             scrollRef1.current.scrollTo({ left: 0, behavior: 'smooth' });
           } else {
-            // Scroll by the width of a single card (cardWidth)
             scrollRef1.current.scrollBy({ left: cardWidth, behavior: 'smooth' });
           }
         }
       }
-    }, 8000); // Every 1 second for testing
+    }, 8000);
 
     const intervalId2 = setInterval(() => {
       if (scrollRef2.current) {
@@ -136,17 +141,14 @@ const Markets = () => {
           const clientWidth = scrollRef2.current.clientWidth;
 
           if (scrollLeft + clientWidth >= scrollWidth) {
-            // Reset to the beginning when the end is reached
             scrollRef2.current.scrollTo({ left: 0, behavior: 'smooth' });
           } else {
-            // Scroll by the width of a single card (cardWidth)
             scrollRef2.current.scrollBy({ left: cardWidth, behavior: 'smooth' });
           }
         }
       }
-    }, 4000); // Every 1 second for testing
+    }, 4000);
 
-    // Cleanup the intervals when the component unmounts
     return () => {
       clearInterval(intervalId1);
       clearInterval(intervalId2);
@@ -186,59 +188,50 @@ const Markets = () => {
                 <h2 className="text-2xl font-semibold text-white mb-4">Trending Artists</h2>
                 <div
                   className="flex overflow-x-auto space-x-4 py-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700"
-                  ref={scrollRef1} // Attach the scrollRef for first row
+                  ref={scrollRef1}
                 >
                   {artistCoins.slice(0, 10).map((artist) => (
-                    <div
-                    key={artist.id}
-                    className="flex-shrink-0 w-40 p-4 bg-gray-800 rounded-lg shadow-md"
-                  >
-                    <img src={artist.image} alt={artist.name} className="w-full h-32 object-cover rounded-md" />
-                    <div className="mt-4 text-center text-white">
-                      <p className="text-lg font-semibold">{artist.name}</p>
-                      <p className="text-sm text-gray-400">{artist.symbol}</p>
-                      <p className="text-sm font-semibold text-green-400">{artist.price}</p>
-                      <p className="text-sm text-gray-400">{artist.change}%</p>
-                    </div>
-                  </div>
+                    <Card key={artist.id} artist={artist} onClick={handleCardClick} />
                   ))}
                 </div>
               </div>
 
-              {/* Other categories can go here, e.g., Latest Artists */}
-              
+              {/* Top Artists */}
               <div>
                 <h2 className="text-2xl font-semibold text-white mb-4">Top Artists</h2>
                 <div
                   className="flex overflow-x-auto space-x-4 py-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700"
-                  ref={scrollRef2} // Attach the scrollRef for first row
+                  ref={scrollRef2}
                 >
                   {artistCoins.slice(2, 12).map((artist) => (
-                    <div
-                    key={artist.id}
-                    className="flex-shrink-0 w-40 p-4 bg-gray-800 rounded-lg shadow-md"
-                  >
-                    <img src={artist.image} alt={artist.name} className="w-full h-32 object-cover rounded-md" />
-                    <div className="mt-4 text-center text-white">
-                      <p className="text-lg font-semibold">{artist.name}</p>
-                      <p className="text-sm text-gray-400">{artist.symbol}</p>
-                      <p className="text-sm font-semibold text-green-400">{artist.price}</p>
-                      <p className="text-sm text-gray-400">{artist.change}%</p>
-                    </div>
-                  </div>
+                    <Card key={artist.id} artist={artist} onClick={handleCardClick} />
                   ))}
                 </div>
               </div>
-
-
-
-
             </div>
           </div>
         </div>
       </div>
     </div>
   );
+
+  // Card Component defined within the same file
+  function Card({ artist, onClick }) {
+    return (
+      <div
+        onClick={() => onClick(artist.symbol)} // Redirect using the artist's symbol
+        className="flex-shrink-0 w-40 p-4 bg-gray-800 rounded-lg shadow-md cursor-pointer hover:bg-gray-700"
+      >
+        <img src={artist.image} alt={artist.name} className="w-full h-32 object-cover rounded-md" />
+        <div className="mt-4 text-center text-white">
+          <p className="text-lg font-semibold">{artist.name}</p>
+          <p className="text-sm text-gray-400">{artist.symbol}</p>
+          <p className="text-sm font-semibold text-green-400">{artist.price}</p>
+          <p className="text-sm text-gray-400">{artist.change}%</p>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default Markets;
