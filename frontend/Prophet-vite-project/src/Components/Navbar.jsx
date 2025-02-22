@@ -21,10 +21,6 @@ const Navbar = () => {
               <Activity className="w-5 h-5" />
               <span>Markets</span>
             </Link>
-            <Link to="/settings" className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
-              <Settings className="w-5 h-5" />
-              <span>Settings</span>
-            </Link>
             <Link to="/profile" className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
               <User className="w-5 h-5" />
               <span>Profile</span>
