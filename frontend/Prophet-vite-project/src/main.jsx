@@ -1,10 +1,9 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App.jsx'; // Assuming your App component is in App.jsx
+import Landing from './Landing.jsx';
+import './index.css';
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+const container = document.getElementById('root');
+const root = createRoot(container);
+root.render(<React.StrictMode><Landing /></React.StrictMode>);
