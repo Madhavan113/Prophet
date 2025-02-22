@@ -1,9 +1,18 @@
-const express = require('express');
+// routes/orderbook.route.js
+import express from 'express';
 const router = express.Router();
-const OrderController = require('../controllers/OrderController');
-const auth = require('../middleware/auth');
 
-router.post('/order', auth, OrderController.createOrder);
-router.get('/orderbook/:coinPair', OrderController.getOrderbook);
+// Add a root route handler
+router.get('/', (req, res) => {
+    res.json({ message: 'Orderbook API is working' });
+});
 
-module.exports = router;
+router.post('/order', (req, res) => {
+    res.json({ message: 'Order route working' });
+});
+
+router.get('/:coinPair', (req, res) => {
+    res.json({ message: 'Orderbook fetch route working' });
+});
+
+export default router;

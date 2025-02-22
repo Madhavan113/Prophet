@@ -1,22 +1,67 @@
+// server.js
 import express from "express";
 import dotenv from "dotenv";
-import {connect} from "./config/db.js";
-import bigRoutes from "./routes/product.route.js"; // bigRoutes is the router (we can set this to be anything)
+import { connect } from "./config/db.js";
+import { initializeWebSocket } from './utils/websocket.utils.js';
+import cors from 'cors';
+import morgan from 'morgan';
+
+// Import routes
+import bigRoutes from "./routes/product.route.js";
+import orderbookRoutes from "./routes/orderbook.route.js";
+
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 5000; // if the PORT is not defined, use 5000
-app.use(express.json()); // allows for us to use json data in the body of the req.body
+const PORT = process.env.PORT || 5000;
 
-app.use("/api/products", bigRoutes); // has bigRoutes handle all requests to /api/products
+console.log('MONGO_URI:', process.env.MONGO_URI);
+
+// Middleware
+app.use(cors());
+app.use(morgan('dev')); // logging
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use("/api/products", bigRoutes);
+app.use("/api/orderbook", orderbookRoutes);
+
 app.get('/', (req, res) => {
     res.send('Server is ready');
-})
-
-console.log(process.env.MONGO_URI);
-
-app.listen(PORT, () => {
-connect();// app doesn't have explicit access to the database, this connection is for the product.model file to work
-  console.log('Server is running on http://localhost:'+PORT);
 });
 
-// aZAS6f8WOqUFh2W3
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        message: 'Something broke!',
+        error: process.env.NODE_ENV === 'development' ? err.message : {}
+    });
+});
+
+// Handle 404
+app.use((req, res) => {
+    res.status(404).json({ message: 'Route not found' });
+});
+
+const server = app.listen(PORT, () => {
+    connect(); // Connect to MongoDB
+    console.log('Server is running on http://localhost:' + PORT);
+});
+
+// Initialize WebSocket
+initializeWebSocket(server);
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+    console.log('Unhandled Rejection:', err);
+    server.close(() => process.exit(1));
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+    console.log('Uncaught Exception:', err);
+    server.close(() => process.exit(1));
+});
+
+export default app;
