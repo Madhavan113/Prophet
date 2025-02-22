@@ -1,76 +1,105 @@
-// scripts/seedOrderbook.js
+// scripts/testApi.js
 import axios from 'axios';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 
 dotenv.config();
 
 const API_URL = 'http://localhost:5000/api/orderbook';
 
-// Mock order data
-const mockOrders = [
-  {
-    type: 'BUY',
-    coinPair: 'BTC-USD',
-    price: 63500.00,
-    amount: 0.5,
-    userId: '507f1f77bcf86cd799439011'
-  },
-  {
-    type: 'SELL',
-    coinPair: 'BTC-USD',
-    price: 64000.00,
-    amount: 0.75,
-    userId: '507f1f77bcf86cd799439012'
-  },
-  {
-    type: 'BUY',
-    coinPair: 'BTC-USD',
-    price: 63200.00,
-    amount: 1.2,
-    userId: '507f1f77bcf86cd799439013'
-  },
-  {
-    type: 'BUY',
-    coinPair: 'ETH-USD',
-    price: 3200.00,
-    amount: 5.0,
-    userId: '507f1f77bcf86cd799439011'
-  },
-  {
-    type: 'SELL',
-    coinPair: 'ETH-USD',
-    price: 3250.00,
-    amount: 3.0,
-    userId: '507f1f77bcf86cd799439012'
-  }
+// Create valid ObjectIds for testing
+const testUserIds = [
+    '67ba4f2338434f902d054c58',  // Use existing userId from your DB
+    '67ba4f2338434f902d054c59'   // Use existing userId from your DB
 ];
 
-const seedDatabase = async () => {
-  try {
-    console.log('Starting to seed database via API...');
-
-    // Create orders through API and print full JSON of each created order
-    for (const order of mockOrders) {
-      try {
-        const response = await axios.post(`${API_URL}/order`, order);
-        console.log('Created order:', JSON.stringify(response.data, null, 2));
-      } catch (error) {
-        console.error('Error creating order:', error.response?.data || error.message);
-      }
+const sampleOrders = [
+    {
+        type: 'BUY',
+        coinPair: 'BTC-USD',
+        price: 63500.00,
+        amount: 0.5,
+        userId: testUserIds[0]  // Using existing ObjectId
+    },
+    {
+        type: 'SELL',
+        coinPair: 'ETH-USD',
+        price: 3250.00,
+        amount: 2.0,
+        userId: testUserIds[1]  // Using existing ObjectId
     }
+];
 
-    // Verify orders were created by fetching them and printing full JSON objects
-    const btcOrders = await axios.get(`${API_URL}/BTC-USD`);
-    console.log('\nBTC-USD Orders:', JSON.stringify(btcOrders.data, null, 2));
+const testApi = async () => {
+    try {
+        console.log('\n=== Starting API Tests ===\n');
+        
+        // POST - Create new orders
+        console.log('1. Creating new orders...');
+        const createdOrders = [];
+        for (const order of sampleOrders) {
+            try {
+                const response = await axios.post(`${API_URL}/order`, order);
+                createdOrders.push(response.data);
+                console.log(`Created order: ${response.data._id} for user ${order.userId}`);
+            } catch (error) {
+                console.error('Error creating order:', error.response?.data || error.message);
+            }
+        }
 
-    const ethOrders = await axios.get(`${API_URL}/ETH-USD`);
-    console.log('\nETH-USD Orders:', JSON.stringify(ethOrders.data, null, 2));
+        // GET - Fetch all orders
+        console.log('\n2. Fetching all orders...');
+        try {
+            const allOrders = await axios.get(API_URL);
+            console.log(`Found ${allOrders.data.length} total orders:`);
+            allOrders.data.forEach(order => {
+                console.log(`- Order ${order._id}: ${order.type} ${order.amount} ${order.coinPair} at ${order.price} (User: ${order.userId})`);
+            });
+        } catch (error) {
+            console.error('Error fetching all orders:', error.response?.data || error.message);
+        }
 
-    console.log('\nDatabase seeding completed!');
-  } catch (error) {
-    console.error('Error in seeding process:', error.response?.data || error.message);
-  }
+        // GET - Fetch orders for specific user
+        console.log('\n3. Fetching orders for specific user...');
+        try {
+            const userOrders = await axios.get(`${API_URL}?userId=${testUserIds[0]}`);
+            console.log(`Found ${userOrders.data.length} orders for user ${testUserIds[0]}:`);
+            userOrders.data.forEach(order => {
+                console.log(`- Order ${order._id}: ${order.type} ${order.amount} ${order.coinPair} at ${order.price}`);
+            });
+        } catch (error) {
+            console.error('Error fetching user orders:', error.response?.data || error.message);
+        }
+
+        // DELETE - Delete first created order
+        if (createdOrders.length > 0) {
+            console.log('\n4. Deleting first created order...');
+            try {
+                const deleteResponse = await axios.delete(`${API_URL}/${createdOrders[0]._id}`);
+                console.log('Delete response:', deleteResponse.data);
+            } catch (error) {
+                console.error('Error deleting order:', error.response?.data || error.message);
+            }
+        }
+
+        // Verify deletion
+        console.log('\n5. Verifying deletion by fetching all orders again...');
+        try {
+            const remainingOrders = await axios.get(API_URL);
+            console.log(`Remaining orders: ${remainingOrders.data.length}`);
+            remainingOrders.data.forEach(order => {
+                console.log(`- Order ${order._id}: ${order.type} ${order.amount} ${order.coinPair} at ${order.price} (User: ${order.userId})`);
+            });
+        } catch (error) {
+            console.error('Error fetching remaining orders:', error.response?.data || error.message);
+        }
+
+        console.log('\n=== API Tests Completed ===\n');
+    } catch (error) {
+        console.error('Unexpected error during testing:', error);
+    }
 };
 
-// Run the seed function
-seedDatabase();
+// Run the tests
+console.log('Starting API tests...');
+testApi().then(() => console.log('Tests completed!'));

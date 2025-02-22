@@ -1,17 +1,16 @@
+// routes/order.route.js
 import express from 'express';
-import OrderController from '../controllers/order.controller.js'; // Import the OrderController
+import OrderController from '../controllers/order.controller.js';
 
 const router = express.Router();
 
-// Add a root route handler
-router.get('/', (req, res) => {
-    res.json({ message: 'Orderbook API is working' });
-});
-
-// Use the createOrder method from OrderController for the /order route
+// POST /api/orderbook/order - Create new order
 router.post('/order', OrderController.createOrder);
 
-// Use the getOrderbook method from OrderController for the /:coinPair route
-router.get('/:coinPair', OrderController.getOrderbook);
+// GET /api/orderbook - Get all orders or filter by userId
+router.get('/', OrderController.getOrders);
+
+// DELETE /api/orderbook/:id - Delete specific order
+router.delete('/:id', OrderController.deleteOrder);
 
 export default router;

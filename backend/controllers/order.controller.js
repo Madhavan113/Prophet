@@ -1,51 +1,55 @@
-const Order = require('../models/Order');
-const OrderMatchingService = require('../services/OrderMatchingService');
-const PriceUpdateService = require('../services/PriceUpdateService');
-const { emitOrderbookUpdate } = require('../utils/websocket');
+// controllers/order.controller.js
+import Order from '../models/order.model.js';
 
 class OrderController {
-  static async createOrder(req, res) {
-    try {
-      const { type, coinPair, price, amount } = req.body;
-      const userId = req.user.id;
+    // Create new order
+    static async createOrder(req, res) {
+        try {
+            const { type, coinPair, price, amount, userId } = req.body;
+            
+            const newOrder = new Order({
+                type,
+                coinPair,
+                price,
+                amount,
+                userId
+            });
 
-      const newOrder = new Order({
-        type,
-        coinPair,
-        price,
-        amount,
-        userId
-      });
-
-      await newOrder.save();
-      await OrderMatchingService.matchOrders(coinPair);
-      await PriceUpdateService.updatePrice(coinPair);
-
-      emitOrderbookUpdate(coinPair);
-
-      res.status(201).json(newOrder);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+            const savedOrder = await newOrder.save();
+            res.status(201).json(savedOrder);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
     }
-  }
 
-  static async getOrderbook(req, res) {
-    try {
-      const { coinPair } = req.params;
-      
-      const buyOrders = await Order
-        .find({ coinPair, type: 'BUY', status: { $in: ['OPEN', 'PARTIAL'] } })
-        .sort({ price: -1 });
-
-      const sellOrders = await Order
-        .find({ coinPair, type: 'SELL', status: { $in: ['OPEN', 'PARTIAL'] } })
-        .sort({ price: 1 });
-
-      res.json({ buyOrders, sellOrders });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+    // Get all orders or filter by userId
+    static async getOrders(req, res) {
+        try {
+            const { userId } = req.query;
+            const filter = userId ? { userId } : {};
+            
+            const orders = await Order.find(filter).sort({ createdAt: -1 });
+            res.json(orders);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
     }
-  }
+
+    // Delete order by ID
+    static async deleteOrder(req, res) {
+        try {
+            const { id } = req.params;
+            const deletedOrder = await Order.findByIdAndDelete(id);
+            
+            if (!deletedOrder) {
+                return res.status(404).json({ message: 'Order not found' });
+            }
+            
+            res.json({ message: 'Order deleted successfully', order: deletedOrder });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
 }
 
-module.exports = OrderController;
+export default OrderController;
