@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -47,21 +47,21 @@ const Login = () => {
           <span className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
             Prophet
           </span>
-          <span className="mt-1 text-lg text-gray-300">Music Prediction Login</span>
+          <span className="mt-1 text-lg text-gray-300">Login</span>
         </div>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-6">
           {/* Email Field */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-              Email Address
+            <label htmlFor="username" className="block text-sm font-medium text-gray-300">
+              Username
             </label>
             <div className="mt-1">
               <input
-                type="email"
-                id="email"
-                name="email"
-                autoComplete="email"
+                type="text"
+                id="username"
+                name="username"
+                autoComplete="username"
                 required
                 className="appearance-none block w-full px-3 py-2 border border-gray-500 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-purple-500 focus:border-purple-500"
                 value={email}
@@ -86,6 +86,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              {/* Show/Hide Password Button - Perfectly Aligned */}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -95,9 +96,6 @@ const Login = () => {
               </button>
             </div>
           </div>
-
-          {/* Error Message */}
-          {error && <div className="text-red-500 text-sm">{error}</div>}
 
           {/* Remember Me & Forgot Password */}
           <div className="flex items-center justify-between">
@@ -129,6 +127,14 @@ const Login = () => {
             </button>
           </div>
         </form>
+
+        {/* Create Account Link */}
+        <div className="text-center text-sm text-gray-300 mt-4">
+          Don't have an account?{" "}
+          <Link to="/register" className="font-medium text-purple-400 hover:text-purple-300">
+            Create one here
+          </Link>
+        </div>
       </div>
     </div>
   );

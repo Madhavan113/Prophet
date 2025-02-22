@@ -51,7 +51,7 @@ const PortfolioDashboard = () => {
   const isChartProfitable = chartData[chartData.length - 1].value > chartData[0].value;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white w-screen overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white w-screen overflow-x-hidden">
       <div className="pt-16 w-full max-w-full">
         {/* Portfolio Value Header */}
         <div className="mb-8 px-6">
