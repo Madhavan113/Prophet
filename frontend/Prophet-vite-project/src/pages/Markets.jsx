@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { fetchSpotifyArtistImage } from "./spotify.js";
 
 const Markets = () => {
+  const navigate = useNavigate(); // Hook to navigate between pages
+
   const [artistCoins, setArtistCoins] = useState([
     { id: 1, name: "Taylor Swift", symbol: "SWIFT", price: "43,567.89", change: "+5.2" },
     { id: 2, name: "Drake", symbol: "DRAKE", price: "2,890.45", change: "+3.8" },
@@ -32,6 +35,58 @@ const Markets = () => {
     updateArtistImages();
   }, []);
 
+  // Separate refs for each scroll container
+  const scrollRef1 = useRef();
+  const scrollRef2 = useRef();
+
+  const handleCardClick = (symbol) => {
+    navigate(`/coin-graph/${symbol}`); // Navigate to the coin's graph page using symbol
+  };
+
+  // Function to scroll left automatically
+  useEffect(() => {
+    const intervalId1 = setInterval(() => {
+      if (scrollRef1.current) {
+        const card = scrollRef1.current.querySelector(".flex-shrink-0");
+        if (card) {
+          const cardWidth = card.offsetWidth + parseInt(getComputedStyle(card).marginRight, 10);
+          const scrollWidth = scrollRef1.current.scrollWidth;
+          const scrollLeft = scrollRef1.current.scrollLeft;
+          const clientWidth = scrollRef1.current.clientWidth;
+
+          if (scrollLeft + clientWidth >= scrollWidth) {
+            scrollRef1.current.scrollTo({ left: 0, behavior: "smooth" });
+          } else {
+            scrollRef1.current.scrollBy({ left: cardWidth, behavior: "smooth" });
+          }
+        }
+      }
+    }, 8000);
+
+    const intervalId2 = setInterval(() => {
+      if (scrollRef2.current) {
+        const card = scrollRef2.current.querySelector(".flex-shrink-0");
+        if (card) {
+          const cardWidth = card.offsetWidth + parseInt(getComputedStyle(card).marginRight, 10);
+          const scrollWidth = scrollRef2.current.scrollWidth;
+          const scrollLeft = scrollRef2.current.scrollLeft;
+          const clientWidth = scrollRef2.current.clientWidth;
+
+          if (scrollLeft + clientWidth >= scrollWidth) {
+            scrollRef2.current.scrollTo({ left: 0, behavior: "smooth" });
+          } else {
+            scrollRef2.current.scrollBy({ left: cardWidth, behavior: "smooth" });
+          }
+        }
+      }
+    }, 4000);
+
+    return () => {
+      clearInterval(intervalId1);
+      clearInterval(intervalId2);
+    };
+  }, []);
+
   return (
     <div className="fixed inset-0 min-h-screen w-full bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
       <div className="relative min-h-screen w-full">
@@ -54,11 +109,19 @@ const Markets = () => {
             </div>
 
             <div className="space-y-12">
+              {/* Trending Artists */}
               <div>
                 <h2 className="text-2xl font-semibold text-white mb-4">Trending Artists</h2>
-                <div className="flex overflow-x-auto space-x-4 py-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700">
+                <div
+                  className="flex overflow-x-auto space-x-4 py-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700"
+                  ref={scrollRef1}
+                >
                   {artistCoins.slice(0, 10).map((artist) => (
-                    <div key={artist.id} className="flex-shrink-0 w-40 p-4 bg-gray-800 rounded-lg shadow-md">
+                    <div
+                      key={artist.id}
+                      onClick={() => handleCardClick(artist.symbol)} // Navigate to the artist's graph page
+                      className="flex-shrink-0 w-40 p-4 bg-gray-800 rounded-lg shadow-md cursor-pointer hover:bg-gray-700"
+                    >
                       <img
                         src={artist.image}
                         alt={artist.name}
@@ -75,11 +138,19 @@ const Markets = () => {
                 </div>
               </div>
 
+              {/* Top Artists */}
               <div>
                 <h2 className="text-2xl font-semibold text-white mb-4">Top Artists</h2>
-                <div className="flex overflow-x-auto space-x-4 py-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700">
+                <div
+                  className="flex overflow-x-auto space-x-4 py-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700"
+                  ref={scrollRef2}
+                >
                   {artistCoins.slice(2, 12).map((artist) => (
-                    <div key={artist.id} className="flex-shrink-0 w-40 p-4 bg-gray-800 rounded-lg shadow-md">
+                    <div
+                      key={artist.id}
+                      onClick={() => handleCardClick(artist.symbol)} // Navigate to the artist's graph page
+                      className="flex-shrink-0 w-40 p-4 bg-gray-800 rounded-lg shadow-md cursor-pointer hover:bg-gray-700"
+                    >
                       <img
                         src={artist.image}
                         alt={artist.name}
