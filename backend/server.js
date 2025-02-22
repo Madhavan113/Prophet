@@ -1,22 +1,31 @@
 import express from "express";
 import dotenv from "dotenv";
-import {connect} from "./config/db.js";
-import bigRoutes from "./routes/product.route.js"; // bigRoutes is the router (we can set this to be anything)
+import { connect } from "./config/db.js";
+import userRoutes from "./routes/user.router.js"; // Ensure this file exists
+
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 5000; // if the PORT is not defined, use 5000
-app.use(express.json()); // allows for us to use json data in the body of the req.body
+const PORT = process.env.PORT || 5000; // Default to port 5000 if not specified
+app.use(express.json()); // Allows JSON data to be sent in requests
 
-app.use("/api/products", bigRoutes); // has bigRoutes handle all requests to /api/products
-app.get('/', (req, res) => {
-    res.send('Server is ready');
-})
+// Connect to the database before starting the server
+connect()
+  .then(() => {
+    console.log("Connected to MongoDB");
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Error connecting to MongoDB:", err.message);
+  });
 
-console.log(process.env.MONGO_URI);
+// Define API routes
+app.use("/api/users", userRoutes); // Handles all user-related API requests
 
-app.listen(PORT, () => {
-connect();// app doesn't have explicit access to the database, this connection is for the product.model file to work
-  console.log('Server is running on http://localhost:'+PORT);
+// Default route
+app.get("/", (req, res) => {
+  res.send("Server is ready");
 });
 
-// aZAS6f8WOqUFh2W3
+export default app; // Allows testing with Supertest if needed
