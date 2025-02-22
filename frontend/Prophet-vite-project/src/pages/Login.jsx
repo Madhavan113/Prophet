@@ -1,9 +1,44 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');         // Added state for email
+  const [password, setPassword] = useState('');     // Added state for password
+  const [error, setError] = useState(null);         // State for error messages
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent the default form submission
+    setError(null);
+
+    try {
+      const response = await fetch('http://localhost:5000/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        // IMPORTANT: Ensure that your back end expects the same field names.
+        // If your back end expects "username", you might need to send { username: email, password }.
+        body: JSON.stringify({ username: email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || 'Login failed');
+      } else {
+        // Save the JWT in localStorage (or another secure place)
+        localStorage.setItem('token', data.token);
+        // Optionally, redirect the user to a protected page
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('An error occurred. Please try again later.');
+    }
+  };
 
   return (
     <div className="fixed inset-0 min-h-screen w-full bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center">
@@ -15,7 +50,7 @@ const Login = () => {
           <span className="mt-1 text-lg text-gray-300">Music Prediction Login</span>
         </div>
 
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSubmit}>
           {/* Email Field */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-300">
@@ -29,6 +64,8 @@ const Login = () => {
                 autoComplete="email"
                 required
                 className="appearance-none block w-full px-3 py-2 border border-gray-500 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
           </div>
@@ -46,8 +83,9 @@ const Login = () => {
                 autoComplete="current-password"
                 required
                 className="appearance-none block w-3/4 px-3 py-2 pr-12 border border-gray-500 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
-              {/* Show/Hide Password Button - Perfectly Aligned */}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -57,6 +95,9 @@ const Login = () => {
               </button>
             </div>
           </div>
+
+          {/* Error Message */}
+          {error && <div className="text-red-500 text-sm">{error}</div>}
 
           {/* Remember Me & Forgot Password */}
           <div className="flex items-center justify-between">
