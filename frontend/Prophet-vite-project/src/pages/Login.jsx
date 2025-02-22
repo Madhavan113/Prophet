@@ -45,7 +45,7 @@ const Login = () => {
                 name="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none block w-full px-3 py-2 pr-12 border border-gray-500 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                className="appearance-none block w-3/4 px-3 py-2 pr-12 border border-gray-500 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-purple-500 focus:border-purple-500"
               />
               {/* Show/Hide Password Button - Perfectly Aligned */}
               <button
