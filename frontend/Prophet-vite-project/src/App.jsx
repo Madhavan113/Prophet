@@ -4,6 +4,7 @@ import Navbar from './Components/Navbar';
 import Home from './pages/Landing.jsx';
 import Markets from './pages/Markets.jsx';
 import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx'; // Import the Register page
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/markets" element={<Markets />} />
           <Route path="/login" element={<Login />} /> {/* Login Page */}
+          <Route path="/register" element={<Register />} /> {/* Register Page */}
         </Routes>
       </div>
     </Router>
