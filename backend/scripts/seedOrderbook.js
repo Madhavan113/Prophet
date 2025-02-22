@@ -1,122 +1,75 @@
 // scripts/seedOrderbook.js
-import mongoose from 'mongoose';
+import axios from 'axios';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Mock user IDs (you'll need to replace these with real user IDs from your database)
-const mockUserIds = [
-    new mongoose.Types.ObjectId(),
-    new mongoose.Types.ObjectId(),
-    new mongoose.Types.ObjectId()
-];
+const API_URL = 'http://localhost:5000/api/orderbook';
 
 // Mock order data
 const mockOrders = [
-    {
-        type: 'BUY',
-        coinPair: 'BTC-USD',
-        price: 63500.00,
-        amount: 0.5,
-        userId: mockUserIds[0],
-        status: 'OPEN'
-    },
-    {
-        type: 'SELL',
-        coinPair: 'BTC-USD',
-        price: 64000.00,
-        amount: 0.75,
-        userId: mockUserIds[1],
-        status: 'OPEN'
-    },
-    {
-        type: 'BUY',
-        coinPair: 'BTC-USD',
-        price: 63200.00,
-        amount: 1.2,
-        userId: mockUserIds[2],
-        status: 'OPEN'
-    },
-    {
-        type: 'BUY',
-        coinPair: 'ETH-USD',
-        price: 3200.00,
-        amount: 5.0,
-        userId: mockUserIds[0],
-        status: 'OPEN'
-    },
-    {
-        type: 'SELL',
-        coinPair: 'ETH-USD',
-        price: 3250.00,
-        amount: 3.0,
-        userId: mockUserIds[1],
-        status: 'OPEN'
-    }
+  {
+    type: 'BUY',
+    coinPair: 'BTC-USD',
+    price: 63500.00,
+    amount: 0.5,
+    userId: '507f1f77bcf86cd799439011'
+  },
+  {
+    type: 'SELL',
+    coinPair: 'BTC-USD',
+    price: 64000.00,
+    amount: 0.75,
+    userId: '507f1f77bcf86cd799439012'
+  },
+  {
+    type: 'BUY',
+    coinPair: 'BTC-USD',
+    price: 63200.00,
+    amount: 1.2,
+    userId: '507f1f77bcf86cd799439013'
+  },
+  {
+    type: 'BUY',
+    coinPair: 'ETH-USD',
+    price: 3200.00,
+    amount: 5.0,
+    userId: '507f1f77bcf86cd799439011'
+  },
+  {
+    type: 'SELL',
+    coinPair: 'ETH-USD',
+    price: 3250.00,
+    amount: 3.0,
+    userId: '507f1f77bcf86cd799439012'
+  }
 ];
 
-// MongoDB Order Schema
-const OrderSchema = new mongoose.Schema({
-    type: {
-        type: String,
-        enum: ['BUY', 'SELL'],
-        required: true
-    },
-    coinPair: {
-        type: String,
-        required: true
-    },
-    price: {
-        type: Number,
-        required: true
-    },
-    amount: {
-        type: Number,
-        required: true
-    },
-    filled: {
-        type: Number,
-        default: 0
-    },
-    status: {
-        type: String,
-        enum: ['OPEN', 'PARTIAL', 'FILLED', 'CANCELLED'],
-        default: 'OPEN'
-    },
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
-});
-
-const Order = mongoose.model('Order', OrderSchema);
-
-// Seed function
 const seedDatabase = async () => {
-    try {
-        // Connect to MongoDB
-        await mongoose.connect(process.env.MONGO_URI);
-        console.log('Connected to MongoDB');
+  try {
+    console.log('Starting to seed database via API...');
 
-        // Clear existing orders
-        await Order.deleteMany({});
-        console.log('Cleared existing orders');
-
-        // Insert mock orders
-        const insertedOrders = await Order.insertMany(mockOrders);
-        console.log('Inserted mock orders:', insertedOrders);
-
-        console.log('Database seeding completed!');
-    } catch (error) {
-        console.error('Error seeding database:', error);
-    } finally {
-        await mongoose.disconnect();
-        console.log('Disconnected from MongoDB');
+    // Create orders through API and print full JSON of each created order
+    for (const order of mockOrders) {
+      try {
+        const response = await axios.post(`${API_URL}/order`, order);
+        console.log('Created order:', JSON.stringify(response.data, null, 2));
+      } catch (error) {
+        console.error('Error creating order:', error.response?.data || error.message);
+      }
     }
+
+    // Verify orders were created by fetching them and printing full JSON objects
+    const btcOrders = await axios.get(`${API_URL}/BTC-USD`);
+    console.log('\nBTC-USD Orders:', JSON.stringify(btcOrders.data, null, 2));
+
+    const ethOrders = await axios.get(`${API_URL}/ETH-USD`);
+    console.log('\nETH-USD Orders:', JSON.stringify(ethOrders.data, null, 2));
+
+    console.log('\nDatabase seeding completed!');
+  } catch (error) {
+    console.error('Error in seeding process:', error.response?.data || error.message);
+  }
 };
 
 // Run the seed function
