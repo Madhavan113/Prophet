@@ -11,6 +11,7 @@ import Crypto from './pages/CryptoPort.jsx';
 import Markets from './pages/Markets.jsx';
 import Login from './pages/Login.jsx';
 import CoinGraph from './pages/CoinGraph.jsx';
+import Register from './pages/Register.jsx';
 import './index.css';
 
 const container = document.getElementById('root');
@@ -28,6 +29,7 @@ root.render(
           <Route path="/markets" element={<Markets />} /> 
           <Route path="/login" element={<Login />} /> 
           <Route path="/coin-graph/:id" element={<CoinGraph />} />
+          <Route path="/register/" element={<Register />} />
           {/* <Route path="/settings" element={<Settings />} /> Settings page */}
           {/* <Route path="/profile" element={<Profile />} /> Profile page */}
         </Routes>
