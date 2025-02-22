@@ -16,7 +16,6 @@ const MusicCryptoDashboard = () => {
       document.body.style.backgroundColor = '';
     };
   }, []);
-
   const [trendingArtists] = useState([
     { 
       id: 1, 
@@ -24,7 +23,7 @@ const MusicCryptoDashboard = () => {
       symbol: 'SWIFT', 
       price: '43,567.89', 
       change: '+5.2',
-      image: '/api/placeholder/48/48'
+      image: 'https://picsum.photos/48/48?random=1'
     },
     { 
       id: 2, 
@@ -32,7 +31,7 @@ const MusicCryptoDashboard = () => {
       symbol: 'DRAKE', 
       price: '2,890.45', 
       change: '+3.8',
-      image: '/api/placeholder/48/48'
+      image: 'https://picsum.photos/48/48?random=2'
     },
     { 
       id: 3, 
@@ -40,7 +39,7 @@ const MusicCryptoDashboard = () => {
       symbol: 'WEEKND', 
       price: '189.67', 
       change: '+12.4',
-      image: '/api/placeholder/48/48'
+      image: 'https://picsum.photos/48/48?random=3'
     },
     { 
       id: 4, 
@@ -48,7 +47,7 @@ const MusicCryptoDashboard = () => {
       symbol: 'BEY', 
       price: '1.23', 
       change: '-2.1',
-      image: '/api/placeholder/48/48'
+      image: 'https://picsum.photos/48/48?random=4'
     },
     { 
       id: 5, 
@@ -56,7 +55,7 @@ const MusicCryptoDashboard = () => {
       symbol: 'SHEER', 
       price: '21.45', 
       change: '+7.8',
-      image: '/api/placeholder/48/48'
+      image: 'https://picsum.photos/48/48?random=5'
     },
     { 
       id: 6, 
@@ -64,7 +63,7 @@ const MusicCryptoDashboard = () => {
       symbol: 'BTS', 
       price: '34.56', 
       change: '+9.3',
-      image: '/api/placeholder/48/48'
+      image: 'https://picsum.photos/48/48?random=6'
     },
   ]);
 
@@ -75,7 +74,7 @@ const MusicCryptoDashboard = () => {
       symbol: 'RODRIGO', 
       price: '12.34', 
       change: '+25.6',
-      image: '/api/placeholder/48/48'
+      image: 'https://picsum.photos/48/48?random=7'
     },
     { 
       id: 8, 
@@ -83,7 +82,7 @@ const MusicCryptoDashboard = () => {
       symbol: 'DOJA', 
       price: '45.67', 
       change: '+18.9',
-      image: '/api/placeholder/48/48'
+      image: 'https://picsum.photos/48/48?random=8'
     },
     { 
       id: 9, 
@@ -91,7 +90,7 @@ const MusicCryptoDashboard = () => {
       symbol: 'BUNNY', 
       price: '78.90', 
       change: '+15.3',
-      image: '/api/placeholder/48/48'
+      image: 'https://picsum.photos/48/48?random=9'
     },
     { 
       id: 10, 
@@ -99,7 +98,7 @@ const MusicCryptoDashboard = () => {
       symbol: 'EILISH', 
       price: '56.78', 
       change: '+22.1',
-      image: '/api/placeholder/48/48'
+      image: 'https://picsum.photos/48/48?random=10'
     },
     { 
       id: 11, 
@@ -107,7 +106,7 @@ const MusicCryptoDashboard = () => {
       symbol: 'TRAVIS', 
       price: '34.56', 
       change: '+30.4',
-      image: '/api/placeholder/48/48'
+      image: 'https://picsum.photos/48/48?random=11'
     },
     { 
       id: 12, 
@@ -115,7 +114,7 @@ const MusicCryptoDashboard = () => {
       symbol: 'GRANDE', 
       price: '67.89', 
       change: '+20.7',
-      image: '/api/placeholder/48/48'
+      image: 'https://picsum.photos/48/48?random=12'
     },
   ]);
 
@@ -126,7 +125,9 @@ const MusicCryptoDashboard = () => {
       type: 'Concert',
       date: '2023-12-15',
       description: 'The ultimate Taylor Swift experience. Bet on ticket sales!',
-      odds: '+150'
+      odds: '+150',
+      image: 'https://picsum.photos/300/200?random=13',
+      gradient: 'from-purple-600 to-pink-600'
     },
     {
       id: 2,
@@ -134,7 +135,9 @@ const MusicCryptoDashboard = () => {
       type: 'Album Battle',
       date: '2023-11-30',
       description: 'Who will top the charts? Place your bets!',
-      odds: '+200'
+      odds: '+200',
+      image: 'https://picsum.photos/300/200?random=14',
+      gradient: 'from-blue-600 to-indigo-600'
     },
     {
       id: 3,
@@ -142,7 +145,9 @@ const MusicCryptoDashboard = () => {
       type: 'Album Drop',
       date: '2024-01-10',
       description: 'Will their new single break records?',
-      odds: '+120'
+      odds: '+120',
+      image: 'https://picsum.photos/300/200?random=15',
+      gradient: 'from-yellow-600 to-red-600'
     },
     {
       id: 4,
@@ -150,7 +155,29 @@ const MusicCryptoDashboard = () => {
       type: 'Concert',
       date: '2024-02-20',
       description: 'Bet on the success of Beyoncé\'s tour!',
-      odds: '+180'
+      odds: '+180',
+      image: 'https://picsum.photos/300/200?random=16',
+      gradient: 'from-green-600 to-teal-600'
+    },
+    {
+      id: 5,
+      title: 'Metallica World Tour',
+      type: 'Concert',
+      date: '2024-03-05',
+      description: 'Heavy metal legends return. Bet on attendance!',
+      odds: '+250',
+      image: 'https://picsum.photos/300/200?random=17',
+      gradient: 'from-gray-600 to-black'
+    },
+    {
+      id: 6,
+      title: 'Adele Comeback Album',
+      type: 'Album Drop',
+      date: '2024-04-12',
+      description: 'Will Adele dominate the charts again?',
+      odds: '+150',
+      image: 'https://picsum.photos/300/200?random=18',
+      gradient: 'from-pink-600 to-red-600'
     },
   ]);
 
