@@ -1,22 +1,23 @@
-import express from "express";
-import dotenv from "dotenv";
-import {connect} from "./config/db.js";
-import bigRoutes from "./routes/product.route.js"; // bigRoutes is the router (we can set this to be anything)
-dotenv.config();
+// server.js
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+
 const app = express();
-const PORT = process.env.PORT || 5000; // if the PORT is not defined, use 5000
-app.use(express.json()); // allows for us to use json data in the body of the req.body
 
-app.use("/api/products", bigRoutes); // has bigRoutes handle all requests to /api/products
-app.get('/', (req, res) => {
-    res.send('Server is ready');
-})
+// Middleware
+app.use(express.json());
+app.use(cors());
 
-console.log(process.env.MONGO_URI);
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected successfully"))
+  .catch(err => console.error("MongoDB connection error:", err));
 
-app.listen(PORT, () => {
-connect();// app doesn't have explicit access to the database, this connection is for the product.model file to work
-  console.log('Server is running on http://localhost:'+PORT);
-});
+// Routes
+app.use('/api/auth', require('./routes/auth'));
 
-// aZAS6f8WOqUFh2W3
+// Start Server
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
