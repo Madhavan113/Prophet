@@ -3,12 +3,17 @@ import {
   TrendingUp, Award, ArrowUp, ArrowDown, Home, Activity,
   Settings, User, Zap, Calendar, Music, Star
 } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 
 // 1️⃣ Import your Spotify fetch function
 import { fetchSpotifyArtistImage } from './spotify.js';
 
 const MusicCryptoDashboard = () => {
   // Ensure the gradient applies to the full viewport
+  const navigate = useNavigate(); 
+  const handleCardClick = (symbol) => {
+    navigate(`/coin-graph/${symbol}`); // Navigate to the coin's graph page using symbol
+  };
   useEffect(() => {
     document.body.style.margin = '0';
     document.body.style.padding = '0';
@@ -197,7 +202,8 @@ const MusicCryptoDashboard = () => {
                   {trendingArtists.map((artist, index) => (
                     <div
                       key={artist.id}
-                      className="flex items-center justify-between p-4 bg-gray-700/50 backdrop-blur-sm rounded-lg hover:bg-gray-600/50 transition-colors border border-purple-500/10"
+                      className="cursor-pointer flex items-center justify-between p-4 bg-gray-700/50 backdrop-blur-sm rounded-lg hover:bg-gray-600/50 transition-colors border border-purple-500/10"
+                      onClick={() => handleCardClick(artist.symbol)}
                     >
                       <div className="flex items-center space-x-4">
                         <span className="text-lg font-bold text-gray-300 w-8">
@@ -261,7 +267,8 @@ const MusicCryptoDashboard = () => {
                   {risingArtists.map((artist, index) => (
                     <div
                       key={artist.id}
-                      className="flex items-center justify-between p-4 bg-gray-700/50 backdrop-blur-sm rounded-lg hover:bg-gray-600/50 transition-colors border border-purple-500/10"
+                      className="cursor-pointer flex items-center justify-between p-4 bg-gray-700/50 backdrop-blur-sm rounded-lg hover:bg-gray-600 transition-colors border border-purple-500/10"
+                      onClick={() => handleCardClick(artist.symbol)}
                     >
                       <div className="flex items-center space-x-4">
                         <span className="text-lg font-bold text-gray-300 w-8">
