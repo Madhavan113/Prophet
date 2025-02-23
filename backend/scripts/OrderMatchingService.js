@@ -118,7 +118,6 @@ class OrderMatchingService {
                         const remainingSellAmount = sellOrder.amount - (sellOrder.filled || 0);
                         const matchAmount = Math.min(remainingBuyAmount, remainingSellAmount);
                         const executionPrice = sellOrder.price;
-
                         // Update buy order
                         const newBuyFilled = (buyOrder.filled || 0) + matchAmount;
                         if (newBuyFilled === buyOrder.amount) {
