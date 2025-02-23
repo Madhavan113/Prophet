@@ -4,12 +4,35 @@ import axios from 'axios';
 
 class OrderMatchingService {
     static PRICE_UPDATE_URL = 'http://localhost:5000/api/coins/update-price';
+    static ORDER_TIMEOUT = 60000; // 60 seconds in milliseconds
+
+    static async cleanupOrders(session) {
+        const timeoutThreshold = new Date(Date.now() - this.ORDER_TIMEOUT);
+        
+        try {
+            // Delete orders that are either:
+            // 1. Older than 60 seconds
+            // 2. Have status FILLED
+            const deleteResult = await Order.deleteMany({
+                $or: [
+                    { createdAt: { $lt: timeoutThreshold } },
+                    { status: 'FILLED' }
+                ]
+            }).session(session);
+
+            if (deleteResult.deletedCount > 0) {
+                console.log(`Cleaned up ${deleteResult.deletedCount} orders (old or filled)`);
+            }
+        } catch (error) {
+            console.error('Error during order cleanup:', error);
+            throw error;
+        }
+    }
 
     static async calculateOrderBookPrice(buyOrders, sellOrders, targetVolume) {
         let totalVolume = 0;
         let volumeWeightedPrice = 0;
         
-        // Calculate VWAP (Volume Weighted Average Price)
         for (let i = 0; i < sellOrders.length && totalVolume < targetVolume; i++) {
             const order = sellOrders[i];
             const volumeToConsider = Math.min(
@@ -36,7 +59,6 @@ class OrderMatchingService {
             console.log(`Updated price for ${coinPair}: ${price} (Volume: ${volume})`);
         } catch (error) {
             console.error(`Failed to update price for ${coinPair}:`, error.message);
-            // Don't throw error - price update failure shouldn't stop trading
         }
     }
 
@@ -47,24 +69,28 @@ class OrderMatchingService {
         try {
             console.log('Starting order matching process...');
 
-            // Get all open orders within a single transaction
+            // Clean up old and filled orders first
+            await this.cleanupOrders(session);
+
+            // Get remaining valid orders
             const [buyOrders, sellOrders] = await Promise.all([
                 Order.find({
                     type: 'BUY',
-                    status: 'OPEN'
+                    status: 'OPEN',
+                    createdAt: { $gt: new Date(Date.now() - this.ORDER_TIMEOUT) }
                 }).sort({ price: -1, createdAt: 1 }).session(session),
 
                 Order.find({
                     type: 'SELL',
-                    status: 'OPEN'
+                    status: 'OPEN',
+                    createdAt: { $gt: new Date(Date.now() - this.ORDER_TIMEOUT) }
                 }).sort({ price: 1, createdAt: 1 }).session(session)
             ]);
 
             console.log(`Order book state: ${buyOrders.length} buys, ${sellOrders.length} sells`);
 
-            // Track matched orders and price updates
             const matchedOrderIds = new Set();
-            const priceUpdates = new Map(); // coinPair -> {totalVolume, volumeWeightedPrice}
+            const priceUpdates = new Map();
 
             // Process buy orders against the order book
             for (const buyOrder of buyOrders) {
@@ -73,7 +99,6 @@ class OrderMatchingService {
                 let remainingBuyAmount = buyOrder.amount - (buyOrder.filled || 0);
                 if (remainingBuyAmount <= 0) continue;
 
-                // Calculate the current order book price for this volume
                 const orderBookPrice = await this.calculateOrderBookPrice(
                     buyOrders,
                     sellOrders,
@@ -89,12 +114,9 @@ class OrderMatchingService {
                 for (const sellOrder of sellOrders) {
                     if (matchedOrderIds.has(sellOrder._id.toString())) continue;
 
-                    // Basic price matching
                     if (buyOrder.price >= sellOrder.price) {
                         const remainingSellAmount = sellOrder.amount - (sellOrder.filled || 0);
                         const matchAmount = Math.min(remainingBuyAmount, remainingSellAmount);
-                        
-                        // Calculate execution price (usually the sell order's price in a price-time priority model)
                         const executionPrice = sellOrder.price;
 
                         // Update buy order
@@ -172,8 +194,6 @@ class OrderMatchingService {
     }
 
     static async createTradeRecord(trade, session) {
-        // Here you would typically save the trade to your database
-        // Using the provided session for transaction consistency
         console.log('Trade executed:', trade);
         // Implement trade storage as needed
     }

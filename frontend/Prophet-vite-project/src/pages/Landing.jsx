@@ -92,7 +92,46 @@ const MusicCryptoDashboard = () => {
   const itemWidth = 200;
   const totalWidth = trendingArtists.length * itemWidth;
 
-  // 5️⃣ Return your UI with the newly updated images
+  // 5️⃣ Simulate trades
+  const [trades, setTrades] = useState([]);
+
+  useEffect(() => {
+    const simulateTrade = () => {
+      const users = [
+        "QuantumEclipse",
+        "ApexCortex",
+        "NovaPulse",
+        "HydraCore",
+        "ZenithForge",
+        "NeroSpectre",
+        "VanguardWave",
+        "SynapseShift",
+        "VertexFlux",
+        "SolsticeEdge",
+        "OrionBloom",
+        "AuroraCatalyst",
+        "AtlasAxiom",
+        "CelestiaTact",
+        "HyperionThread"
+      ];      
+      const coins = ['SWIFT', 'DRAKE', 'WEEKND', 'BEY', 'SHEER', 'BTS', 'RODRIGO', 'DOJA', 'BUNNY', 'EILISH', 'TRAVIS', 'GRANDE'];
+      const newTrade = {
+        username: users[Math.floor(Math.random() * users.length)],
+        price: (Math.random() * 1000).toFixed(2),
+        quantity: (Math.random() * 10).toFixed(2),
+        coin: coins[Math.floor(Math.random() * coins.length)],
+      };
+      setTrades((prevTrades) => {
+        const updatedTrades = [newTrade, ...prevTrades].slice(0, 5); // Keep only the latest 5 trades
+        return updatedTrades;
+      });
+    };
+
+    const interval = setInterval(simulateTrade, 300); // Add a new trade every 3 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  // 6️⃣ Return your UI with the newly updated images and trades
   return (
     <div className="fixed inset-0 min-h-screen w-full bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
       <div className="relative min-h-screen w-full">
@@ -341,6 +380,38 @@ const MusicCryptoDashboard = () => {
                       <button className="bg-purple-500/20 text-purple-400 px-4 py-2 rounded-lg hover:bg-purple-500/30 transition-colors">
                         Bet ({event.odds})
                       </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Simulated Trades Stream */}
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
+              <div className="flex items-center mb-6">
+                <Activity className="w-6 h-6 text-purple-400 mr-2" />
+                <h2 className="text-xl font-semibold text-white">Latest Trades</h2>
+              </div>
+
+              <div className="space-y-4">
+                {trades.map((trade, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-gray-700/50 backdrop-blur-sm rounded-lg hover:bg-gray-600/50 transition-colors border border-purple-500/10"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <span className="text-lg font-bold text-gray-300 w-8">
+                        {index + 1}
+                      </span>
+                      <div>
+                        <div className="font-semibold text-white">{trade.username}</div>
+                        <div className="text-sm text-gray-300">Bought {trade.quantity} {trade.coin}</div>
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="font-medium text-white">${trade.price}</div>
+                      <div className="text-sm text-gray-300">{trade.coin}</div>
                     </div>
                   </div>
                 ))}
