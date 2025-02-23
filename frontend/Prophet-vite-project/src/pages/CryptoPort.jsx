@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
-
+import { useNavigate } from "react-router-dom";
 // Sample data - replace with actual API data
 const generateMockData = (days) => {
   const data = [];
@@ -35,6 +35,10 @@ const mockHoldings = [
 
 
 const PortfolioDashboard = () => {
+  const navigate = useNavigate(); 
+  const handleCardClick = (symbol) => {
+    navigate(`/coin-graph/${symbol}`); // Navigate to the coin's graph page using symbol
+  };
   const [timeframe, setTimeframe] = useState('3M');
   const timeframes = {
     '3M': 90,
@@ -129,7 +133,9 @@ const PortfolioDashboard = () => {
           <h2 className="text-xl font-semibold mb-6">Current Holdings</h2>
           <div className="grid gap-4">
             {mockHoldings.map((holding) => (
-              <div key={holding.symbol} className="bg-gray-700 rounded-lg p-4 flex items-center justify-between">
+              <div key={holding.symbol} 
+              className="hover:bg-gray-600 bg-gray-700 rounded-lg p-4 flex items-center justify-between cursor-pointer"
+              onClick={() => handleCardClick(holding.symbol)}>
                 <div className="flex items-center space-x-4">
                   <div className="bg-gray-600 p-2 rounded-lg">
                     <DollarSign className="w-6 h-6 text-purple-400" />

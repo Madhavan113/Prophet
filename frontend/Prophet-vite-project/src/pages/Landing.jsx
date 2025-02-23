@@ -267,7 +267,7 @@ const MusicCryptoDashboard = () => {
                   {risingArtists.map((artist, index) => (
                     <div
                       key={artist.id}
-                      className="cursor-pointer flex items-center justify-between p-4 bg-gray-700/50 backdrop-blur-sm rounded-lg hover:bg-gray-600/50 transition-colors border border-purple-500/10"
+                      className="cursor-pointer flex items-center justify-between p-4 bg-gray-700/50 backdrop-blur-sm rounded-lg hover:bg-gray-600 transition-colors border border-purple-500/10"
                       onClick={() => handleCardClick(artist.symbol)}
                     >
                       <div className="flex items-center space-x-4">
