@@ -1,236 +1,140 @@
-import axios from 'axios';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const API_URL = 'http://localhost:5000/api/orderbook';
-const TRADE_INTERVAL = 100; // 500ms between trades
-const BOT_CYCLE_TIME = 10; // 100ms for aggressive trading
+import fetch from 'node-fetch'; // Ensure node-fetch is installed (npm install node-fetch)
 
 class TradingBot {
-    constructor(name, personality, isResolver = false) {
-        this.name = name;
-        this.personality = personality;
-        this.isResolver = isResolver;
-        this.lastAction = null;
-        this.totalTrades = 0;
-        this.isRunning = false;
-        
-        this.aggressiveness = personality.aggressiveness;
-        this.riskTolerance = personality.riskTolerance;
-        this.trendFollowing = personality.trendFollowing;
-        this.orderSizePreference = personality.orderSizePreference;
+  constructor(apiBaseUrl) {
+    this.apiBaseUrl = apiBaseUrl; // Base URL for the API
+  }
+
+  // Fetch orders for a specific artistId (coin pair)
+  async fetchOrdersForArtist(artistId) {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/api/orderbook`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch orders: ${response.statusText}`);
+      }
+
+      const orders = await response.json();
+
+      // Filter orders for the given artistId (coinPair)
+      const filteredOrders = orders.filter(order => order.coinPair === artistId);
+
+      // Separate buy and sell orders
+      const buyOrders = filteredOrders.filter(order => order.type === 'BUY');
+      const sellOrders = filteredOrders.filter(order => order.type === 'SELL');
+
+      // Find the highest bid price and lowest ask price
+      const highestBid = buyOrders.length > 0
+        ? Math.max(...buyOrders.map(order => order.price))
+        : null;
+      const lowestAsk = sellOrders.length > 0
+        ? Math.min(...sellOrders.map(order => order.price))
+        : null;
+
+      // If no valid bid or ask prices are found, return an empty array
+      if (highestBid === null || lowestAsk === null) {
+        console.warn(`No valid bid or ask prices found for artistId: ${artistId}`);
+        return [];
+      }
+
+      // Return the bid-ask spread as an array of objects
+      return [{ bidPrice: highestBid, askPrice: lowestAsk }];
+    } catch (error) {
+      console.error(`Error fetching orders for artistId ${artistId}:`, error);
+      return [];
+    }
+  }
+
+  // Calculate the market price using the median of the bid-ask spread
+  calculateMarketPrice(spreads) {
+    if (spreads.length === 0) {
+      console.warn('No spreads found to calculate market price');
+      return null;
     }
 
-    async analyzeOrderBook() {
-        try {
-            const response = await axios.get(API_URL);
-            const orders = response.data;
+    // Calculate the midpoint of each spread
+    const midpoints = spreads.map(({ bidPrice, askPrice }) => (bidPrice + askPrice) / 2);
 
-            const buyOrders = orders.filter(order => order.type === 'BUY');
-            const sellOrders = orders.filter(order => order.type === 'SELL');
+    // Sort midpoints to find the median
+    midpoints.sort((a, b) => a - b);
 
-            return {
-                buyOrders,
-                sellOrders,
-                avgBuyPrice: this.calculateAverage(buyOrders.map(o => o.price)),
-                avgSellPrice: this.calculateAverage(sellOrders.map(o => o.price)),
-                spreadSize: this.calculateAverage(sellOrders.map(o => o.price)) - 
-                          this.calculateAverage(buyOrders.map(o => o.price)),
-                orderBookDepth: orders.length
-            };
-        } catch (error) {
-            console.error(`[${this.name}] Orderbook analysis error:`, error.message);
-            return null;
-        }
+    // Calculate the median
+    const mid = Math.floor(midpoints.length / 2);
+    let medianSpread;
+    if (midpoints.length % 2 === 0) {
+      // If even, average the two middle values
+      medianSpread = (midpoints[mid - 1] + midpoints[mid]) / 2;
+    } else {
+      // If odd, take the middle value
+      medianSpread = midpoints[mid];
     }
 
-    calculateAverage(prices) {
-        return prices.length ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
+    console.log(`Calculated median spread: ${medianSpread}`);
+    return medianSpread;
+  }
+
+  // Send a POST request to update the coin price
+  async updateCoinPrice(artistId, newPrice) {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/update-price`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ order: { artistId, newPrice } }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update price: ${response.statusText}`);
+      }
+
+      console.log(`Price update request sent successfully for artistId: ${artistId}`);
+    } catch (error) {
+      console.error('Error sending price update request:', error);
+    }
+  }
+
+  // Main function to run the trading bot
+  async run(artistId) {
+    console.log(`Starting trading bot for artistId: ${artistId}`);
+
+    // Fetch orders for the artistId
+    const spreads = await this.fetchOrdersForArtist(artistId);
+
+    // Calculate the market price
+    const marketPrice = this.calculateMarketPrice(spreads);
+
+    if (marketPrice !== null) {
+      // Update the coin price in the database
+      await this.updateCoinPrice(artistId, marketPrice);
+    } else {
+      console.warn('No market price calculated. Skipping price update.');
     }
 
-    async resolveOutstandingOrder(analysis) {
-        if (!analysis || (!analysis.buyOrders.length && !analysis.sellOrders.length)) return null;
-
-        const resolveBuy = Math.random() > 0.5 && analysis.buyOrders.length > 0;
-        const ordersToChooseFrom = resolveBuy ? analysis.buyOrders : analysis.sellOrders;
-
-        if (!ordersToChooseFrom.length) return null;
-
-        const orderToResolve = ordersToChooseFrom[Math.floor(Math.random() * ordersToChooseFrom.length)];
-
-        return {
-            type: resolveBuy ? 'SELL' : 'BUY',
-            price: orderToResolve.price,
-            amount: orderToResolve.amount
-        };
-    }
-
-    async makeTradeDecision(analysis) {
-        if (!analysis) return null;
-
-        if (this.isResolver) {
-            return this.resolveOutstandingOrder(analysis);
-        }
-
-        const midPrice = (analysis.avgBuyPrice + analysis.avgSellPrice) / 2;
-        const priceVariation = analysis.spreadSize * this.aggressiveness;
-        const randomFactor = Math.random() * this.riskTolerance;
-
-        const buyPressure = analysis.buyOrders.length / (analysis.orderBookDepth || 1);
-        const decision = {
-            type: Math.random() < this.trendFollowing ? 
-                  (buyPressure > 0.5 ? 'BUY' : 'SELL') : 
-                  (buyPressure > 0.5 ? 'SELL' : 'BUY'),
-            price: midPrice,
-            amount: (0.1 + (Math.random() * 0.9)) * this.orderSizePreference
-        };
-
-        decision.price += decision.type === 'BUY' ? 
-                         -(priceVariation * randomFactor) : 
-                         (priceVariation * randomFactor);
-
-        this.lastAction = decision.type;
-        return decision;
-    }
-
-    async placeTrade(decision) {
-        if (!decision) return null;
-
-        try {
-            const order = {
-                type: decision.type,
-                coinPair: 'BTC-USD',
-                price: parseFloat(decision.price.toFixed(2)),
-                amount: parseFloat(decision.amount.toFixed(4)),
-                userId: this.personality.userId
-            };
-
-            const response = await axios.post(`${API_URL}/order`, order);
-            this.totalTrades++;
-            console.log(`[${this.name}] ${decision.type} #${this.totalTrades}: ${order.amount} @ $${order.price}`);
-            return response.data;
-        } catch (error) {
-            console.error(`[${this.name}] Trade placement error:`, error.message);
-            return null;
-        }
-    }
-
-    async tradingCycle() {
-        if (!this.isRunning) return;
-
-        const analysis = await this.analyzeOrderBook();
-        if (analysis) {
-            const decision = await this.makeTradeDecision(analysis);
-            if (decision) {
-                await this.placeTrade(decision);
-            }
-        }
-
-        // Schedule next cycle with small random delay
-        const delay = BOT_CYCLE_TIME + (Math.random() * TRADE_INTERVAL);
-        setTimeout(() => this.tradingCycle(), delay);
-    }
-
-    start() {
-        this.isRunning = true;
-        this.tradingCycle();
-    }
-
-    stop() {
-        this.isRunning = false;
-    }
+    console.log(`Trading bot cycle completed for artistId: ${artistId}`);
+  }
 }
 
-// Bot personalities with unique trading characteristics
-const botPersonalities = [
-    {
-        name: "Resolver",
-        personality: {
-            userId: "67ba4f2338434f902d054c57",
-            aggressiveness: 0.5,
-            riskTolerance: 0.5,
-            trendFollowing: 0.5,
-            orderSizePreference: 0.5
-        },
-        isResolver: true
-    },
-    // Add 9 more diverse trading personalities...
-    {
-        name: "AggressiveTrader",
-        personality: {
-            userId: "67ba4f2338434f902d054c58",
-            aggressiveness: 0.9,
-            riskTolerance: 0.8,
-            trendFollowing: 0.3,
-            orderSizePreference: 0.9
-        }
-    },
-    // ... (remaining bot personalities)
-];
+// Configuration
+const API_BASE_URL = 'http://localhost:5000'; // Replace with your API base URL
+const ARTIST_ID = 'BTC-USD'; // Replace with the artistId (coin pair) you want to trade
 
-// Add random variation to personalities
-const createRandomizedPersonality = (basePersonality) => {
-    const randomize = (value) => {
-        const variation = (Math.random() - 0.5) * 0.2;
-        return Math.max(0.1, Math.min(0.9, value + variation));
-    };
+// Initialize and run the trading bot
+const tradingBot = new TradingBot(API_BASE_URL);
 
-    return {
-        ...basePersonality,
-        personality: {
-            ...basePersonality.personality,
-            aggressiveness: randomize(basePersonality.personality.aggressiveness),
-            riskTolerance: randomize(basePersonality.personality.riskTolerance),
-            trendFollowing: randomize(basePersonality.personality.trendFollowing),
-            orderSizePreference: randomize(basePersonality.personality.orderSizePreference)
-        }
-    };
-};
+// Run the bot on an interval (e.g., every 5 seconds)
+const TRADING_INTERVAL = 5000; // 5 seconds
+setInterval(async () => {
+  try {
+    await tradingBot.run(ARTIST_ID);
+  } catch (error) {
+    console.error('Error in trading bot cycle:', error);
+  }
+}, TRADING_INTERVAL);
 
-const runParallelBotSystem = async () => {
-    try {
-        console.log('Connecting to MongoDB...');
-        await mongoose.connect(process.env.MONGO_URI, {
-            serverSelectionTimeoutMS: 5000
-        });
-        console.log('Connected to MongoDB successfully');
-
-        // Create and start all bots in parallel
-        const bots = botPersonalities.map(base => {
-            const randomized = createRandomizedPersonality(base);
-            return new TradingBot(
-                randomized.name, 
-                randomized.personality,
-                base.isResolver || false
-            );
-        });
-
-        // Start all bots simultaneously
-        console.log('Starting all trading bots in parallel...');
-        bots.forEach(bot => bot.start());
-
-        // Setup cleanup
-        process.on('SIGINT', async () => {
-            console.log('\nStopping all bots...');
-            bots.forEach(bot => bot.stop());
-            
-            try {
-                await mongoose.connection.close();
-                console.log('MongoDB connection closed');
-                process.exit(0);
-            } catch (err) {
-                console.error('Error during shutdown:', err);
-                process.exit(1);
-            }
-        });
-
-    } catch (error) {
-        console.error('System initialization error:', error);
-        process.exit(1);
-    }
-};
-
-console.log('Initializing parallel trading system...');
-runParallelBotSystem();
+console.log(`Trading bot started for artistId: ${ARTIST_ID}. Running every ${TRADING_INTERVAL / 1000} seconds...`);

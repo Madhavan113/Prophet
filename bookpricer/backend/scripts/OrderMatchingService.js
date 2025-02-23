@@ -1,201 +1,174 @@
 import mongoose from 'mongoose';
-import Order from '../models/order.model.js';
-import axios from 'axios';
-
+import fetch from 'node-fetch'; // Ensure node-fetch is installed (npm install node-fetch)
+import Order from '../models/order.model.js'; // Import the Order model
+const ArtistCoin = new mongoose.Schema({
+    artistId: { type: String, required: true, unique: true },
+    currentPrice: { type: mongoose.Schema.Types.Decimal128, required: true },
+    priceChange: { type: mongoose.Schema.Types.Decimal128, required: true },
+    lastUpdated: { type: Date, default: Date.now },
+  });
 class OrderMatchingService {
-    static PRICE_UPDATE_URL = 'http://localhost:5000/api/coins/update-price';
-    static ORDER_TIMEOUT = 60000; // 60 seconds in milliseconds
+  static async matchOrders() {
+    try {
+      // Fetch all orders from the orderbook
+      const orders = await this.fetchOrdersFromOrderBook();
 
-    static async cleanupOrders(session) {
-        const timeoutThreshold = new Date(Date.now() - this.ORDER_TIMEOUT);
-        
-        try {
-            // Delete orders that are either:
-            // 1. Older than 60 seconds
-            // 2. Have status FILLED
-            const deleteResult = await Order.deleteMany({
-                $or: [
-                    { createdAt: { $lt: timeoutThreshold } },
-                    { status: 'FILLED' }
-                ]
-            }).session(session);
+      // Process orders and match them
+      const matchedOrders = await this.processOrders(orders);
 
-            if (deleteResult.deletedCount > 0) {
-                console.log(`Cleaned up ${deleteResult.deletedCount} orders (old or filled)`);
-            }
-        } catch (error) {
-            console.error('Error during order cleanup:', error);
-            throw error;
+      // Update the holdings of each user based on matched orders
+      await this.updateUserHoldings(matchedOrders);
+
+      // Update the prices of the coins based on the matched orders
+      await this.updateCoinPrices(matchedOrders);
+
+      console.log('Orders matched and prices updated successfully');
+    } catch (error) {
+      console.error('Error in matching orders:', error);
+      throw error;
+    }
+  }
+
+  // Fetch all orders from the orderbook
+  static async fetchOrdersFromOrderBook() {
+    try {
+      const response = await fetch('http://localhost:5000/api/orderbook', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch orders: ${response.statusText}`);
+      }
+
+      const orders = await response.json();
+      return orders;
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      return [];
+    }
+  }
+
+  // Process and match orders
+  static async processOrders(orders) {
+    const matchedOrders = [];
+
+    // Separate buy and sell orders
+    const buyOrders = orders.filter(order => order.type === 'BUY');
+    const sellOrders = orders.filter(order => order.type === 'SELL');
+
+    // Sort buy orders in descending order of price (highest bid first)
+    buyOrders.sort((a, b) => b.price - a.price);
+
+    // Sort sell orders in ascending order of price (lowest ask first)
+    sellOrders.sort((a, b) => a.price - b.price);
+
+    // Match buy and sell orders
+    for (const buyOrder of buyOrders) {
+      for (const sellOrder of sellOrders) {
+        if (buyOrder.price >= sellOrder.price && buyOrder.amount > 0 && sellOrder.amount > 0) {
+          // Determine the matched amount
+          const matchedAmount = Math.min(buyOrder.amount, sellOrder.amount);
+
+          // Add the matched orders to the result
+          matchedOrders.push({
+            buyOrderId: buyOrder._id,
+            sellOrderId: sellOrder._id,
+            artistId: buyOrder.coinPair, // Assuming coinPair is the artistId
+            price: sellOrder.price, // Use the sell order price as the matched price
+            amount: matchedAmount,
+          });
+
+          // Update the remaining amounts in the orders
+          buyOrder.amount -= matchedAmount;
+          sellOrder.amount -= matchedAmount;
+
+          // Remove fully matched orders from the database
+          if (buyOrder.amount === 0) {
+            await Order.findByIdAndDelete(buyOrder._id);
+          }
+          if (sellOrder.amount === 0) {
+            await Order.findByIdAndDelete(sellOrder._id);
+          }
         }
+      }
     }
 
-    static async calculateOrderBookPrice(buyOrders, sellOrders, targetVolume) {
-        let totalVolume = 0;
-        let volumeWeightedPrice = 0;
-        
-        for (let i = 0; i < sellOrders.length && totalVolume < targetVolume; i++) {
-            const order = sellOrders[i];
-            const volumeToConsider = Math.min(
-                order.amount - (order.filled || 0),
-                targetVolume - totalVolume
-            );
-            
-            volumeWeightedPrice += order.price * volumeToConsider;
-            totalVolume += volumeToConsider;
-        }
+    return matchedOrders;
+  }
 
-        if (totalVolume === 0) return null;
-        return volumeWeightedPrice / totalVolume;
+  // Update the holdings of each user based on matched orders
+  static async updateUserHoldings(matchedOrders) {
+    for (const matchedOrder of matchedOrders) {
+      const { buyOrderId, sellOrderId, artistId, price, amount } = matchedOrder;
+
+      // Fetch the buy and sell orders from the database
+      const buyOrder = await Order.findById(buyOrderId);
+      const sellOrder = await Order.findById(sellOrderId);
+      Order.findByIdAndDelete(buyOrder._id);
+      Order.findByIdAndDelete(sellOrder._id);
+      // Update user holdings (placeholder logic)
+      console.log(`Updating holdings for users: Buyer ${buyOrder.userId}, Seller ${sellOrder.userId}`);
+      // Add your logic here to update user holdings in the database
     }
+  }
 
-    static async updateCoinPrice(coinPair, price, volume) {
-        try {
-            await axios.post(this.PRICE_UPDATE_URL, {
-                pair: coinPair,
-                price: price,
-                volume: volume,
-                timestamp: Date.now()
-            });
-            console.log(`Updated price for ${coinPair}: ${price} (Volume: ${volume})`);
-        } catch (error) {
-            console.error(`Failed to update price for ${coinPair}:`, error.message);
-        }
+  // Update the prices of the coins based on the matched orders
+  static async updateCoinPrices(matchedOrders) {
+    for (const matchedOrder of matchedOrders) {
+      const { artistId, price } = matchedOrder;
+      await this.updateCoinPrice(artistId, price);
     }
+  }
 
-    static async matchOrders() {
-        const session = await mongoose.startSession();
-        session.startTransaction();
+  // Update the price of a specific coin
+  static async updateCoinPrice(artistId, newPrice) {
+    try {
+      const artistCoin = await ArtistCoin.findOne({ artistId });
+      if (!artistCoin) throw new Error('Artist coin not found');
 
-        try {
-            console.log('Starting order matching process...');
+      const priceChange = ((newPrice - artistCoin.currentPrice) / artistCoin.currentPrice) * 100;
 
-            // Clean up old and filled orders first
-            await this.cleanupOrders(session);
+      artistCoin.currentPrice = newPrice;
+      artistCoin.priceChange = priceChange;
+      artistCoin.lastUpdated = new Date();
+      await artistCoin.save();
 
-            // Get remaining valid orders
-            const [buyOrders, sellOrders] = await Promise.all([
-                Order.find({
-                    type: 'BUY',
-                    status: 'OPEN',
-                    createdAt: { $gt: new Date(Date.now() - this.ORDER_TIMEOUT) }
-                }).sort({ price: -1, createdAt: 1 }).session(session),
+      await PriceHistory.create({
+        coinId: artistId,
+        price: newPrice,
+        priceChange: priceChange,
+      });
 
-                Order.find({
-                    type: 'SELL',
-                    status: 'OPEN',
-                    createdAt: { $gt: new Date(Date.now() - this.ORDER_TIMEOUT) }
-                }).sort({ price: 1, createdAt: 1 }).session(session)
-            ]);
-
-            console.log(`Order book state: ${buyOrders.length} buys, ${sellOrders.length} sells`);
-
-            const matchedOrderIds = new Set();
-            const priceUpdates = new Map();
-
-            // Process buy orders against the order book
-            for (const buyOrder of buyOrders) {
-                if (matchedOrderIds.has(buyOrder._id.toString())) continue;
-
-                let remainingBuyAmount = buyOrder.amount - (buyOrder.filled || 0);
-                if (remainingBuyAmount <= 0) continue;
-
-                const orderBookPrice = await this.calculateOrderBookPrice(
-                    buyOrders,
-                    sellOrders,
-                    remainingBuyAmount
-                );
-
-                if (!orderBookPrice) {
-                    console.log(`No liquidity available for buy order ${buyOrder._id}`);
-                    continue;
-                }
-
-                // Match against eligible sell orders
-                for (const sellOrder of sellOrders) {
-                    if (matchedOrderIds.has(sellOrder._id.toString())) continue;
-
-                    if (buyOrder.price >= sellOrder.price) {
-                        const remainingSellAmount = sellOrder.amount - (sellOrder.filled || 0);
-                        const matchAmount = Math.min(remainingBuyAmount, remainingSellAmount);
-                        const executionPrice = sellOrder.price;
-                        // Update buy order
-                        const newBuyFilled = (buyOrder.filled || 0) + matchAmount;
-                        if (newBuyFilled === buyOrder.amount) {
-                            await Order.findByIdAndDelete(buyOrder._id).session(session);
-                            matchedOrderIds.add(buyOrder._id.toString());
-                        } else {
-                            await Order.findByIdAndUpdate(buyOrder._id, {
-                                filled: newBuyFilled,
-                                status: 'PARTIAL',
-                                lastMatchPrice: executionPrice
-                            }, { session });
-                        }
-
-                        // Update sell order
-                        const newSellFilled = (sellOrder.filled || 0) + matchAmount;
-                        if (newSellFilled === sellOrder.amount) {
-                            await Order.findByIdAndDelete(sellOrder._id).session(session);
-                            matchedOrderIds.add(sellOrder._id.toString());
-                        } else {
-                            await Order.findByIdAndUpdate(sellOrder._id, {
-                                filled: newSellFilled,
-                                status: 'PARTIAL',
-                                lastMatchPrice: executionPrice
-                            }, { session });
-                        }
-
-                        // Record the trade
-                        await this.createTradeRecord({
-                            buyOrderId: buyOrder._id,
-                            sellOrderId: sellOrder._id,
-                            amount: matchAmount,
-                            price: executionPrice,
-                            orderBookPrice: orderBookPrice,
-                            timestamp: new Date(),
-                            buyerId: buyOrder.userId,
-                            sellerId: sellOrder.userId,
-                            coinPair: buyOrder.coinPair
-                        }, session);
-
-                        // Accumulate price updates
-                        const pairUpdates = priceUpdates.get(buyOrder.coinPair) || {
-                            totalVolume: 0,
-                            volumeWeightedPrice: 0
-                        };
-                        pairUpdates.totalVolume += matchAmount;
-                        pairUpdates.volumeWeightedPrice += executionPrice * matchAmount;
-                        priceUpdates.set(buyOrder.coinPair, pairUpdates);
-
-                        console.log(`Matched ${matchAmount} units at ${executionPrice} (Order book price: ${orderBookPrice})`);
-
-                        remainingBuyAmount -= matchAmount;
-                        if (remainingBuyAmount <= 0) break;
-                    }
-                }
-            }
-
-            await session.commitTransaction();
-            console.log('Order matching process completed successfully');
-
-            // Send price updates after successful transaction
-            for (const [coinPair, updates] of priceUpdates.entries()) {
-                const avgPrice = updates.volumeWeightedPrice / updates.totalVolume;
-                await this.updateCoinPrice(coinPair, avgPrice, updates.totalVolume);
-            }
-
-        } catch (error) {
-            await session.abortTransaction();
-            console.error('Error in order matching process:', error);
-            throw error;
-        } finally {
-            session.endSession();
-        }
+      // Send a POST request to update the price in the coin price database
+      await this.sendPriceUpdateRequest(artistId, newPrice);
+    } catch (error) {
+      console.error(`Error updating coin price for artistId ${artistId}:`, error);
     }
+  }
 
-    static async createTradeRecord(trade, session) {
-        console.log('Trade executed:', trade);
-        // Implement trade storage as needed
+  // Send a POST request to update the price in the coin price database
+  static async sendPriceUpdateRequest(artistId, newPrice) {
+    try {
+      const response = await fetch('http://localhost:3000/update-price', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ order: { artistId, newPrice } }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update price');
+      }
+
+      console.log(`Price update request sent successfully for artistId: ${artistId}`);
+    } catch (error) {
+      console.error('Error sending price update request:', error);
     }
+  }
 }
 
 export default OrderMatchingService;
