@@ -14,11 +14,12 @@ const MusicCryptoDashboard = () => {
   const handleCardClick = (symbol) => {
     navigate(`/coin-graph/${symbol}`); // Navigate to the coin's graph page using symbol
   };
+
   useEffect(() => {
     document.body.style.margin = '0';
     document.body.style.padding = '0';
     document.body.style.minHeight = '100vh';
-    document.body.style.backgroundColor = '#0a0a0a'; // Dark fallback
+    document.body.style.backgroundColor = '#000000'; // Full black background
     
     return () => {
       document.body.style.margin = '';
@@ -97,51 +98,12 @@ const MusicCryptoDashboard = () => {
   const itemWidth = 200;
   const totalWidth = trendingArtists.length * itemWidth;
 
-  // 5️⃣ Simulate trades
-  const [trades, setTrades] = useState([]);
-
-  useEffect(() => {
-    const simulateTrade = () => {
-      const users = [
-        "QuantumEclipse",
-        "ApexCortex",
-        "NovaPulse",
-        "HydraCore",
-        "ZenithForge",
-        "NeroSpectre",
-        "VanguardWave",
-        "SynapseShift",
-        "VertexFlux",
-        "SolsticeEdge",
-        "OrionBloom",
-        "AuroraCatalyst",
-        "AtlasAxiom",
-        "CelestiaTact",
-        "HyperionThread"
-      ];      
-      const coins = ['SWIFT', 'DRAKE', 'WEEKND', 'BEY', 'SHEER', 'BTS', 'RODRIGO', 'DOJA', 'BUNNY', 'EILISH', 'TRAVIS', 'GRANDE'];
-      const newTrade = {
-        username: users[Math.floor(Math.random() * users.length)],
-        price: (Math.random() * 1000).toFixed(2),
-        quantity: (Math.random() * 10).toFixed(2),
-        coin: coins[Math.floor(Math.random() * coins.length)],
-      };
-      setTrades((prevTrades) => {
-        const updatedTrades = [newTrade, ...prevTrades].slice(0, 5); // Keep only the latest 5 trades
-        return updatedTrades;
-      });
-    };
-
-    const interval = setInterval(simulateTrade, 300); // Add a new trade every 3 seconds
-    return () => clearInterval(interval);
-  }, []);
-
-  // 6️⃣ Return your UI with the newly updated images and trades
+  // 5️⃣ Return your UI with the newly updated images
   return (
-    <div className="fixed inset-0 min-h-screen w-full bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+    <div className="fixed inset-0 min-h-screen w-full bg-black">
       <div className="relative min-h-screen w-full">
         {/* Navigation Bar */}
-        <nav className="bg-gray-900 border-b border-gray-800">
+        <nav className="bg-black border-b border-black">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center">
@@ -176,15 +138,15 @@ const MusicCryptoDashboard = () => {
           <div className="mx-auto p-8 max-w-7xl">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
-              <h1 className="text-3xl font-bold text-white">Music Artist Tokens</h1>
+              <h1 className="text-xl font-bold text-white">Leaderboard</h1>
               <div className="flex items-center space-x-4">
-                <TrendingUp className="w-6 h-6 text-purple-400" />
+                <TrendingUp className="w-6 h-6 text-white" />
                 <span className="text-gray-200">Live Market Data</span>
               </div>
             </div>
 
             {/* Continuous Ticker */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 mb-8 overflow-hidden border border-purple-500/20">
+            <div className="bg-black backdrop-blur-sm rounded-xl p-4 mb-8 overflow-hidden border border-black">
               <div
                 className="flex items-center animate-scroll"
                 style={{
@@ -197,11 +159,7 @@ const MusicCryptoDashboard = () => {
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-white">{artist.symbol}</span>
                       <span
-                        className={
-                          artist.change.startsWith('+')
-                            ? 'text-green-400'
-                            : 'text-red-400'
-                        }
+                        className={artist.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}
                       >
                         {artist.change}%
                       </span>
@@ -231,7 +189,7 @@ const MusicCryptoDashboard = () => {
             {/* Leaderboards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
               {/* Top Artist Tokens */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
+              <div className="bg-black rounded-xl p-6 border border-black">
                 <div className="flex items-center mb-6">
                   <Award className="w-6 h-6 text-yellow-400 mr-2" />
                   <h2 className="text-xl font-semibold text-white">Top Artist Tokens</h2>
@@ -241,14 +199,13 @@ const MusicCryptoDashboard = () => {
                   {trendingArtists.map((artist, index) => (
                     <div
                       key={artist.id}
-                      className="cursor-pointer flex items-center justify-between p-4 bg-gray-700/50 backdrop-blur-sm rounded-lg hover:bg-gray-600/50 transition-colors border border-purple-500/10"
+                      className="cursor-pointer flex items-center justify-between p-4 bg-black rounded-lg hover:bg-black transition-colors border border-black"
                       onClick={() => handleCardClick(artist.symbol)}
                     >
                       <div className="flex items-center space-x-4">
                         <span className="text-lg font-bold text-gray-300 w-8">
                           {index + 1}
                         </span>
-                        {/* Updated to Real Spotify Image */}
                         <img
                           src={artist.image}
                           alt={artist.name}
@@ -296,7 +253,7 @@ const MusicCryptoDashboard = () => {
               </div>
 
               {/* Rising Artist Tokens */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
+              <div className="bg-black rounded-xl p-6 border border-black">
                 <div className="flex items-center mb-6">
                   <Zap className="w-6 h-6 text-green-400 mr-2" />
                   <h2 className="text-xl font-semibold text-white">Rising Artist Tokens</h2>
@@ -306,14 +263,13 @@ const MusicCryptoDashboard = () => {
                   {risingArtists.map((artist, index) => (
                     <div
                       key={artist.id}
-                      className="cursor-pointer flex items-center justify-between p-4 bg-gray-700/50 backdrop-blur-sm rounded-lg hover:bg-gray-600 transition-colors border border-purple-500/10"
+                      className="cursor-pointer flex items-center justify-between p-4 bg-black rounded-lg hover:bg-black transition-colors border border-black"
                       onClick={() => handleCardClick(artist.symbol)}
                     >
                       <div className="flex items-center space-x-4">
                         <span className="text-lg font-bold text-gray-300 w-8">
                           {index + 1}
                         </span>
-                        {/* Updated to Real Spotify Image */}
                         <img
                           src={artist.image}
                           alt={artist.name}
@@ -362,7 +318,7 @@ const MusicCryptoDashboard = () => {
             </div>
 
             {/* Featured Events */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
+            <div className="bg-black rounded-xl p-6 border border-black">
               <div className="flex items-center mb-6">
                 <Calendar className="w-6 h-6 text-purple-400 mr-2" />
                 <h2 className="text-xl font-semibold text-white">Featured Events & Bets</h2>
@@ -372,7 +328,7 @@ const MusicCryptoDashboard = () => {
                 {featuredEvents.map((event) => (
                   <div
                     key={event.id}
-                    className="bg-gray-700/50 backdrop-blur-sm rounded-lg p-4 hover:bg-gray-600/50 transition-colors border border-purple-500/10"
+                    className="bg-black rounded-lg p-4 hover:bg-black transition-colors border border-black"
                   >
                     <div className="flex items-center space-x-2 mb-4">
                       {event.type === 'Concert' && <Music className="w-5 h-5 text-purple-400" />}
@@ -384,41 +340,9 @@ const MusicCryptoDashboard = () => {
                     <p className="text-sm text-gray-300 mb-4">{event.description}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-400">{event.date}</span>
-                      <button className="bg-purple-500/20 text-purple-400 px-4 py-2 rounded-lg hover:bg-purple-500/30 transition-colors">
+                      <button className="bg-black text-white px-4 py-2 rounded-lg hover:bg-black transition-colors">
                         Bet ({event.odds})
                       </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Simulated Trades Stream */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
-              <div className="flex items-center mb-6">
-                <Activity className="w-6 h-6 text-purple-400 mr-2" />
-                <h2 className="text-xl font-semibold text-white">Latest Trades</h2>
-              </div>
-
-              <div className="space-y-4">
-                {trades.map((trade, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-4 bg-gray-700/50 backdrop-blur-sm rounded-lg hover:bg-gray-600/50 transition-colors border border-purple-500/10"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <span className="text-lg font-bold text-gray-300 w-8">
-                        {index + 1}
-                      </span>
-                      <div>
-                        <div className="font-semibold text-white">{trade.username}</div>
-                        <div className="text-sm text-gray-300">Bought {trade.quantity} {trade.coin}</div>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <div className="font-medium text-white">${trade.price}</div>
-                      <div className="text-sm text-gray-300">{trade.coin}</div>
                     </div>
                   </div>
                 ))}
