@@ -25,7 +25,7 @@ app.use('/api/prices', priceRoutes);
 
 // Add error/404 handler as needed...
 
-const PORT = process.env.PORT || 5005;
+const PORT = 5005;
 
 connectDB()
   .then(() => {

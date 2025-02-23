@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
 // Load environment variables from the hardcoded .env path
-dotenv.config({ path: "C:/Users/its1g/Prophet/Prophet/.env" });
+dotenv.config({ path: "C:/Users/kaili/Desktop/Coding Projects/Prophet/bookpricer/backend/.env" });
 
 // MongoDB connection function
 async function connectDB() {
