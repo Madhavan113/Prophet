@@ -16,17 +16,45 @@ const testUserIds = [
 const sampleOrders = [
     {
         type: 'BUY',
-        coinPair: 'BTC-USD',
-        price: 63500.00,
-        amount: 0.5,
-        userId: testUserIds[0]  // Using existing ObjectId
+        coinPair: 'SWIFT-USD',
+        price: 150.00,
+        amount: 10.0,
+        userId: testUserIds[0]
     },
     {
         type: 'SELL',
-        coinPair: 'ETH-USD',
-        price: 3250.00,
-        amount: 2.0,
-        userId: testUserIds[1]  // Using existing ObjectId
+        coinPair: 'SHEER-USD',
+        price: 75.00,
+        amount: 20.0,
+        userId: testUserIds[1]
+    },
+    {
+        type: 'BUY',
+        coinPair: 'SHEER-USD',
+        price: 80.00,
+        amount: 15.0,
+        userId: testUserIds[0]
+    },
+    {
+        type: 'SELL',
+        coinPair: 'SWIFT-USD',
+        price: 155.00,
+        amount: 5.0,
+        userId: testUserIds[1]
+    },
+    {
+        type: 'BUY',
+        coinPair: 'SWIFT-USD',
+        price: 148.00,
+        amount: 8.0,
+        userId: testUserIds[0]
+    },
+    {
+        type: 'SELL',
+        coinPair: 'SHEER-USD',
+        price: 77.00,
+        amount: 12.0,
+        userId: testUserIds[1]
     }
 ];
 
