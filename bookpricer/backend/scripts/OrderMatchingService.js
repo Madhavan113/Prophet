@@ -1,12 +1,9 @@
 import mongoose from 'mongoose';
 import fetch from 'node-fetch'; // Ensure node-fetch is installed (npm install node-fetch)
 import Order from '../models/order.model.js'; // Import the Order model
-const ArtistCoin = new mongoose.Schema({
-    artistId: { type: String, required: true, unique: true },
-    currentPrice: { type: mongoose.Schema.Types.Decimal128, required: true },
-    priceChange: { type: mongoose.Schema.Types.Decimal128, required: true },
-    lastUpdated: { type: Date, default: Date.now },
-  });
+import ArtistCoin from '../models/artist.model.js';
+import PriceHistory from '../models/pricehist.model.js';
+
 class OrderMatchingService {
   static async matchOrders() {
     try {
@@ -86,12 +83,12 @@ class OrderMatchingService {
           sellOrder.amount -= matchedAmount;
 
           // Remove fully matched orders from the database
-          if (buyOrder.amount === 0) {
-            await Order.findByIdAndDelete(buyOrder._id);
-          }
-          if (sellOrder.amount === 0) {
-            await Order.findByIdAndDelete(sellOrder._id);
-          }
+          // if (buyOrder.amount === 0) {
+          //   await Order.findByIdAndDelete(buyOrder._id);
+          // }
+          // if (sellOrder.amount === 0) {
+          //   await Order.findByIdAndDelete(sellOrder._id);
+          // }
         }
       }
     }
@@ -112,6 +109,13 @@ class OrderMatchingService {
       // Update user holdings (placeholder logic)
       console.log(`Updating holdings for users: Buyer ${buyOrder.userId}, Seller ${sellOrder.userId}`);
       // Add your logic here to update user holdings in the database
+      // After you do your update logic, delete if needed
+      if (buyOrder && buyOrder.amount === 0) {
+        await Order.findByIdAndDelete(buyOrderId);
+      }
+      if (sellOrder && sellOrder.amount === 0) {
+        await Order.findByIdAndDelete(sellOrderId);
+      }
     }
   }
 

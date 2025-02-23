@@ -101,7 +101,7 @@ class TradingBot {
         try {
             const order = {
                 type: decision.type,
-                coinPair: 'BTC-USD',
+                coinPair: '2',
                 price: parseFloat(decision.price.toFixed(2)),
                 amount: parseFloat(decision.amount.toFixed(4)),
                 userId: this.personality.userId

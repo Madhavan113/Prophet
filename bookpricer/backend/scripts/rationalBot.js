@@ -155,7 +155,7 @@ class TradingBot {
 
 // Configuration
 const API_BASE_URL = 'http://localhost:5001'; // Replace with your API base URL
-const ARTIST_ID = 'BTC-USD'; // Replace with the artistId (coin pair) you want to trade
+const ARTIST_ID = '2'; // Replace with the artistId (coin pair) you want to trade
 
 // Initialize and run the trading bot
 const tradingBot = new TradingBot(API_BASE_URL, ARTIST_ID);
