@@ -17,11 +17,16 @@ const MusicCryptoDashboard = () => {
   ]);
 
   // Determine if the price has gone up or down
-  const isProfitable = coinPriceData[coinPriceData.length - 1].price > coinPriceData[0].price;
+  const isProfitable =
+    coinPriceData.length > 0 &&
+    coinPriceData[coinPriceData.length - 1].price > coinPriceData[0].price;
 
   // State for Buy/Sell actions
   const [action, setAction] = useState(null);
+  const [buyAmount, setBuyAmount] = useState(''); // State for buy amount
+  const [sellAmount, setSellAmount] = useState(''); // State for sell amount
 
+  // Update body styles on mount and cleanup on unmount
   useEffect(() => {
     document.body.style.margin = '0';
     document.body.style.padding = '0';
@@ -38,13 +43,23 @@ const MusicCryptoDashboard = () => {
 
   // Handlers for Buy and Sell buttons
   const handleBuy = () => {
-    setAction('Buying');
-    console.log('User clicked Buy');
+    if (!buyAmount || isNaN(buyAmount) || buyAmount <= 0) {
+      setAction('Please enter a valid amount to buy');
+      return;
+    }
+    setAction(`Buying ${buyAmount} units of ${id}`);
+    console.log(`Buying ${buyAmount} units of ${id}`);
+    setBuyAmount(''); // Clear the input after action
   };
 
   const handleSell = () => {
-    setAction('Selling');
-    console.log('User clicked Sell');
+    if (!sellAmount || isNaN(sellAmount) || sellAmount <= 0) {
+      setAction('Please enter a valid amount to sell');
+      return;
+    }
+    setAction(`Selling ${sellAmount} units of ${id}`);
+    console.log(`Selling ${sellAmount} units of ${id}`);
+    setSellAmount(''); // Clear the input after action
   };
 
   return (
@@ -68,9 +83,7 @@ const MusicCryptoDashboard = () => {
           <div className="mx-auto p-8 max-w-7xl">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
-              <h1 className="text-3xl font-bold text-white">
-                {id}
-              </h1>
+              <h1 className="text-3xl font-bold text-white">{id}</h1>
             </div>
 
             {/* Display the ID */}
@@ -91,20 +104,24 @@ const MusicCryptoDashboard = () => {
                   <defs>
                     {/* Gradient for profitable areas */}
                     <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/> {/* Green */}
-                      <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} /> {/* Green */}
+                      <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                     </linearGradient>
                     {/* Gradient for non-profitable areas */}
                     <linearGradient id="colorLoss" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8}/> {/* Red */}
-                      <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8} /> {/* Red */}
+                      <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  {/* Remove Grid lines */}
-                  {/* <CartesianGrid strokeDasharray="3 3" stroke="#ccc" /> */}
                   <XAxis dataKey="time" stroke="#fff" />
                   <YAxis stroke="#fff" />
-                  <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '8px' }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1F2937',
+                      border: 'none',
+                      borderRadius: '8px',
+                    }}
+                  />
                   <Area
                     type="monotone"
                     dataKey="price"
@@ -117,26 +134,60 @@ const MusicCryptoDashboard = () => {
             </div>
 
             {/* Action Buttons (Buy / Sell) */}
-            <div className="flex space-x-4 mt-6">
-  {/* Buy Button */}
-  <button
-    className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-300"
-  >
-    Buy
-  </button>
+            <div className="mt-6 grid grid-cols-2 gap-4">
+              {/* Buy Section */}
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
+                <div className="mb-4">
+                  <label className="block text-white text-sm font-medium mb-2">
+                    Buy Amount
+                  </label>
+                  <input
+                    type="number"
+                    value={buyAmount}
+                    onChange={(e) => setBuyAmount(e.target.value)}
+                    className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Enter amount to buy"
+                    min="0"
+                  />
+                </div>
+                <button
+                  onClick={handleBuy}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-300"
+                >
+                  Buy
+                </button>
+              </div>
 
-  {/* Sell Button */}
-  <button
-    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-300"
-  >
-    Sell
-  </button>
-</div>
+              {/* Sell Section */}
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
+                <div className="mb-4">
+                  <label className="block text-white text-sm font-medium mb-2">
+                    Sell Amount
+                  </label>
+                  <input
+                    type="number"
+                    value={sellAmount}
+                    onChange={(e) => setSellAmount(e.target.value)}
+                    className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    placeholder="Enter amount to sell"
+                    min="0"
+                  />
+                </div>
+                <button
+                  onClick={handleSell}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-300"
+                >
+                  Sell
+                </button>
+              </div>
+            </div>
 
             {/* Action Status */}
             {action && (
-              <div className="mt-6 text-center text-white text-lg">
-                <p>{action} action initiated!</p>
+              <div className="mt-6 text-center">
+                <p className="text-white text-lg bg-gray-800/50 backdrop-blur-sm rounded-xl p-4">
+                  {action}
+                </p>
               </div>
             )}
           </div>
