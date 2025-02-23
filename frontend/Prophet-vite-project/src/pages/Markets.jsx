@@ -88,7 +88,7 @@ const Markets = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 min-h-screen w-full bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+    <div className="fixed inset-0 min-h-screen w-full bg-black">
       <div className="relative min-h-screen w-full">
         <nav className="bg-gray-900 border-b border-gray-800">
           <div className="max-w-7xl mx-auto px-4">
@@ -105,7 +105,7 @@ const Markets = () => {
         <div className="overflow-y-auto" style={{ height: "calc(100vh - 4rem)" }}>
           <div className="mx-auto p-8 max-w-7xl">
             <div className="flex items-center justify-between mb-8">
-              <h1 className="text-3xl font-bold text-white">Buy Artist Coins</h1>
+              <h1 className="text-3xl font-bold text-white"></h1>
             </div>
 
             <div className="space-y-12">
