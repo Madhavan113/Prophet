@@ -3,8 +3,6 @@ import express from "express";
 import dotenv from "dotenv";
 import { connect } from "./config/db.js";
 import { initializeWebSocket } from './utils/websocket.utils.js';
-import { setupWebSocket } from './services/WebSocketService.js';
-import OrderMatchingService from './services/tradeBroadcast.service.js';
 import cors from 'cors';
 import morgan from 'morgan';
 
@@ -17,9 +15,6 @@ import orderbookRoutes from "./routes/orderbook.route.js";
 dotenv.config();
 const app = express();
 
-const serve = http.createServer(app);
-const { enhancedCreateTradeRecord } = setupWebSocket(serve);
-OrderMatchingService.createTradeRecord = enhancedCreateTradeRecord;
 
 const PORT = process.env.PORT || 5000;
 
