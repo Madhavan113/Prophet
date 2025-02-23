@@ -1,4 +1,4 @@
-// scripts/tradingBot.js
+// scripts/multiTradingBot.js
 import axios from 'axios';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -6,13 +6,19 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const API_URL = 'http://localhost:5000/api/orderbook';
-const BOT_USER_ID = '67ba4f2338434f902d054c58'; // Replace with your bot's user ID
 
 class TradingBot {
-    constructor() {
+    constructor(name, personality) {
+        this.name = name;
+        this.personality = personality;
         this.lastAction = null;
-        this.orderCount = 0;
-        this.maxOrdersPerSession = 10;
+        this.totalTrades = 0;
+        
+        // Personality traits (0-1 scale)
+        this.aggressiveness = personality.aggressiveness;
+        this.riskTolerance = personality.riskTolerance;
+        this.trendFollowing = personality.trendFollowing;
+        this.orderSizePreference = personality.orderSizePreference;
     }
 
     async analyzeOrderBook() {
@@ -20,11 +26,9 @@ class TradingBot {
             const response = await axios.get(API_URL);
             const orders = response.data;
 
-            // Get buy and sell orders
             const buyOrders = orders.filter(order => order.type === 'BUY');
             const sellOrders = orders.filter(order => order.type === 'SELL');
 
-            // Calculate average prices
             const avgBuyPrice = this.calculateAverage(buyOrders.map(o => o.price));
             const avgSellPrice = this.calculateAverage(sellOrders.map(o => o.price));
             const spreadSize = avgSellPrice - avgBuyPrice;
@@ -38,7 +42,7 @@ class TradingBot {
                 orderBookDepth: orders.length
             };
         } catch (error) {
-            console.error('Error analyzing orderbook:', error);
+            console.error(`[${this.name}] Error analyzing orderbook:`, error);
             return null;
         }
     }
@@ -51,51 +55,45 @@ class TradingBot {
     async makeTradeDecision(analysis) {
         if (!analysis) return null;
 
-        // Random factors for unpredictability
-        const randomFactor = Math.random();
-        const volatilityPreference = Math.random();
-        const aggressiveness = Math.random();
-
-        // Base price calculations
+        // Personality-influenced randomness
+        const randomFactor = Math.random() * this.riskTolerance;
+        const volatilityPreference = Math.random() * this.aggressiveness;
+        
         const midPrice = (analysis.avgBuyPrice + analysis.avgSellPrice) / 2;
-        const priceVariation = analysis.spreadSize * 0.1; // 10% of spread
+        const priceVariation = analysis.spreadSize * this.aggressiveness;
 
-        // Decision making with random elements
         let decision = {
             type: null,
             price: midPrice,
             amount: 0
         };
 
-        // More orders on one side might indicate trend
         const buyPressure = analysis.buyOrders.length / (analysis.orderBookDepth || 1);
         
-        // Random strategy selection
-        if (randomFactor < 0.3) {
-            // Counter-trend strategy
-            decision.type = buyPressure > 0.5 ? 'SELL' : 'BUY';
-        } else if (randomFactor < 0.6) {
-            // Trend-following strategy
+        // Personality-based strategy selection
+        if (Math.random() < this.trendFollowing) {
+            // Trend-following
             decision.type = buyPressure > 0.5 ? 'BUY' : 'SELL';
         } else {
-            // Random strategy
-            decision.type = Math.random() > 0.5 ? 'BUY' : 'SELL';
+            // Counter-trend
+            decision.type = buyPressure > 0.5 ? 'SELL' : 'BUY';
         }
 
-        // Randomly adjust price based on aggressiveness
-        if (decision.type === 'BUY') {
-            decision.price = midPrice - (priceVariation * aggressiveness);
-        } else {
-            decision.price = midPrice + (priceVariation * aggressiveness);
-        }
-
-        // Random amount between 0.1 and 1.0
-        decision.amount = 0.1 + (Math.random() * 0.9);
-
-        // Don't place same type of order twice in a row
-        if (this.lastAction === decision.type) {
+        // Add some randomness to prevent all bots doing the same thing
+        if (Math.random() > 0.7) {
             decision.type = decision.type === 'BUY' ? 'SELL' : 'BUY';
         }
+
+        // Price calculation based on personality
+        if (decision.type === 'BUY') {
+            decision.price = midPrice - (priceVariation * randomFactor);
+        } else {
+            decision.price = midPrice + (priceVariation * randomFactor);
+        }
+
+        // Amount based on personality
+        const baseAmount = 0.1 + (Math.random() * 0.9);
+        decision.amount = baseAmount * this.orderSizePreference;
 
         this.lastAction = decision.type;
         return decision;
@@ -110,26 +108,75 @@ class TradingBot {
                 coinPair: 'BTC-USD',
                 price: parseFloat(decision.price.toFixed(2)),
                 amount: parseFloat(decision.amount.toFixed(4)),
-                userId: BOT_USER_ID
+                userId: this.personality.userId
             };
 
             const response = await axios.post(`${API_URL}/order`, order);
-            console.log(`Placed ${decision.type} order:`, order);
-            this.orderCount++;
+            this.totalTrades++;
+            console.log(`[${this.name}] Placed ${decision.type} order #${this.totalTrades}:`, order);
             return response.data;
         } catch (error) {
-            console.error('Error placing trade:', error);
+            console.error(`[${this.name}] Error placing trade:`, error);
             return null;
         }
     }
-
-    shouldContinueTrading() {
-        return this.orderCount < this.maxOrdersPerSession;
-    }
 }
 
-// Run the bot
-const runBot = async () => {
+// Bot personality templates
+const botPersonalities = [
+    {
+        name: "Aggressive Trader",
+        personality: {
+            userId: "67ba4f2338434f902d054c58",
+            aggressiveness: 0.8,
+            riskTolerance: 0.7,
+            trendFollowing: 0.3,
+            orderSizePreference: 0.9
+        }
+    },
+    {
+        name: "Conservative Trader",
+        personality: {
+            userId: "67ba4f2338434f902d054c59",
+            aggressiveness: 0.3,
+            riskTolerance: 0.4,
+            trendFollowing: 0.7,
+            orderSizePreference: 0.4
+        }
+    },
+    {
+        name: "Random Trader",
+        personality: {
+            userId: "67ba4f2338434f902d054c5a",
+            aggressiveness: 0.5,
+            riskTolerance: 0.5,
+            trendFollowing: 0.5,
+            orderSizePreference: 0.5
+        }
+    }
+];
+
+// Function to add random variation to personality traits
+const createRandomizedPersonality = (basePersonality) => {
+    const randomize = (value) => {
+        const variation = (Math.random() - 0.5) * 0.2; // ±10% variation
+        return Math.max(0.1, Math.min(0.9, value + variation));
+    };
+
+    return {
+        ...basePersonality,
+        personality: {
+            ...basePersonality.personality,
+            aggressiveness: randomize(basePersonality.personality.aggressiveness),
+            riskTolerance: randomize(basePersonality.personality.riskTolerance),
+            trendFollowing: randomize(basePersonality.personality.trendFollowing),
+            orderSizePreference: randomize(basePersonality.personality.orderSizePreference)
+        }
+    };
+};
+
+// Run multiple bots
+const runMultiBotSystem = async () => {
     try {
         console.log('Connecting to MongoDB...');
         await mongoose.connect(process.env.MONGO_URI, {
@@ -137,41 +184,39 @@ const runBot = async () => {
         });
         console.log('Connected to MongoDB successfully');
 
-        const bot = new TradingBot();
-        
-        // Trading loop
-        const tradingInterval = setInterval(async () => {
-            if (!bot.shouldContinueTrading()) {
-                console.log('Reached maximum orders for session, stopping bot');
-                clearInterval(tradingInterval);
-                return;
-            }
+        // Create bots with randomized personalities
+        const bots = botPersonalities.map(base => {
+            const randomized = createRandomizedPersonality(base);
+            return new TradingBot(randomized.name, randomized.personality);
+        });
 
-            console.log('\n=== Starting Trading Cycle ===');
+        // Trading loop for each bot
+        bots.forEach((bot, index) => {
+            // Different interval for each bot to prevent simultaneous trades
+            const interval = 5000 + (index * 1000); // Stagger bot actions
             
-            // Analyze market
-            const analysis = await bot.analyzeOrderBook();
-            if (analysis) {
-                console.log('Market Analysis:', {
-                    avgBuyPrice: analysis.avgBuyPrice.toFixed(2),
-                    avgSellPrice: analysis.avgSellPrice.toFixed(2),
-                    spread: analysis.spreadSize.toFixed(2),
-                    depth: analysis.orderBookDepth
-                });
+            setInterval(async () => {
+                console.log(`\n=== ${bot.name} Trading Cycle ===`);
+                
+                const analysis = await bot.analyzeOrderBook();
+                if (analysis) {
+                    console.log(`[${bot.name}] Market Analysis:`, {
+                        avgBuyPrice: analysis.avgBuyPrice.toFixed(2),
+                        avgSellPrice: analysis.avgSellPrice.toFixed(2),
+                        spread: analysis.spreadSize.toFixed(2),
+                        depth: analysis.orderBookDepth
+                    });
 
-                // Make and execute trading decision
-                const decision = await bot.makeTradeDecision(analysis);
-                if (decision) {
-                    console.log('Trade Decision:', decision);
-                    await bot.placeTrade(decision);
+                    const decision = await bot.makeTradeDecision(analysis);
+                    if (decision) {
+                        await bot.placeTrade(decision);
+                    }
                 }
-            }
-
-            console.log(`Orders placed this session: ${bot.orderCount}`);
-        }, 10000); // Run every 10 seconds
+            }, interval);
+        });
 
     } catch (error) {
-        console.error('Bot error:', error);
+        console.error('System error:', error);
         process.exit(1);
     }
 };
@@ -188,5 +233,5 @@ process.on('SIGINT', async () => {
     }
 });
 
-console.log('Starting trading bot...');
-runBot();
+console.log('Starting multi-bot trading system...');
+runMultiBotSystem();
