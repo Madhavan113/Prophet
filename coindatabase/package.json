@@ -1,13 +1,13 @@
 {
-    "name": "checker",
-    "version": "1.0.0",
-    "description": "A script to check the database",
-    "main": "checkDatabase.js",
-    "type": "module",
-    "scripts": {
-      "start": "node server.js"
-    },
-    "dependencies": {
-      "some-package": "^1.0.0"
-    }
+  "name": "checker",
+  "version": "1.0.0",
+  "description": "A script to check the database",
+  "main": "checkDatabase.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5"
   }
+}
