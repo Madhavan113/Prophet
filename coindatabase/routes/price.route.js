@@ -3,7 +3,6 @@ import PriceController from '../controllers/price.controller.js';
 
 const router = express.Router();
 const priceController = new PriceController();
-await priceController.connect();
 
 // Update price based on order book
 router.post('/update-price', async (req, res) => {

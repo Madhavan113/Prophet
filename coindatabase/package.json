@@ -5,7 +5,7 @@
     "main": "checkDatabase.js",
     "type": "module",
     "scripts": {
-      "start": "node checkDatabase.js"
+      "start": "node server.js"
     },
     "dependencies": {
       "some-package": "^1.0.0"
