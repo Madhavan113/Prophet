@@ -1,8 +1,8 @@
-// routes/auth.js
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const axios = require('axios'); // For making API calls
 const User = require('../models/user');
 
 // Middleware to verify JWT token
@@ -20,6 +20,47 @@ const authMiddleware = (req, res, next) => {
     res.status(401).json({ msg: 'Token is not valid' });
   }
 };
+
+// Artist ID mapping
+const artistIdMap = {
+  'Taylor Swift': 1,
+  'Drake': 2,
+  'The Weeknd': 3,
+  'Beyonce': 4,
+  'Ed Sheeran': 5,
+  'BTS': 6,
+  'Olivia Rodrigo': 7,
+  'Doja Cat': 8,
+  'Bad Bunny': 9,
+  'Billie Eilish': 10,
+  'Travis Scott': 11,
+  'Ariana Grande': 12,
+};
+
+// Fetch current price for an artist
+async function fetchArtistPrice(artistId) {
+  try {
+    const response = await axios.get(`http://localhost:5001/${artistId}/price`);
+    return response.data; // { price: 43567.89, priceChange: "+5.2" }
+  } catch (error) {
+    console.error(`Error fetching price for artist ID ${artistId}:`, error.message);
+    return null;
+  }
+}
+
+// Cache for storing artist prices
+let artistPrices = {};
+
+// Update artist prices every 30 seconds
+setInterval(async () => {
+  for (const [artist, artistId] of Object.entries(artistIdMap)) {
+    const priceData = await fetchArtistPrice(artistId);
+    if (priceData) {
+      artistPrices[artist] = priceData.price; // Store the current price
+    }
+  }
+  console.log("Updated artist prices:", artistPrices);
+}, 30000); // 30 seconds
 
 // Registration Endpoint
 router.post('/register', async (req, res) => {
@@ -46,7 +87,21 @@ router.post('/register', async (req, res) => {
       username,
       email,
       password: hashedPassword,
-      // Assets are initialized with default values in the model
+      assets: new Map([
+        ['Taylor Swift', 0],
+        ['Drake', 0],
+        ['The Weeknd', 0],
+        ['Beyonce', 0],
+        ['Ed Sheeran', 0],
+        ['BTS', 0],
+        ['Olivia Rodrigo', 0],
+        ['Doja Cat', 0],
+        ['Bad Bunny', 0],
+        ['Billie Eilish', 0],
+        ['Travis Scott', 0],
+        ['Ariana Grande', 0],
+      ]),
+      purchasePrices: new Map(), // Store purchase prices for each artist
     });
 
     await newUser.save();
@@ -57,23 +112,23 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// Update Assets Endpoint
 router.post('/update-assets', authMiddleware, async (req, res) => {
   try {
-    const { artist, amount } = req.body;
+    const { artist, amount, purchasePrice } = req.body;
 
     // Validate the artist name
-    const validArtists = [
-      'Taylor Swift', 'Drake', 'The Weeknd', 'Beyonce', 'Ed Sheeran', 'BTS',
-      'Olivia Rodrigo', 'Doja Cat', 'Bad Bunny', 'Billie Eilish', 'Travis Scott', 'Ariana Grande',
-    ];
-    if (!validArtists.includes(artist)) {
+    if (!artistIdMap[artist]) {
       return res.status(400).json({ msg: "Invalid artist name" });
     }
 
     // Find the user and update their assets
     const user = await User.findOneAndUpdate(
       { _id: req.user }, // Find the user by ID
-      { $inc: { [`assets.${artist}`]: amount } }, // Increment the artist's coins
+      {
+        $inc: { [`assets.${artist}`]: amount }, // Increment the artist's coins
+        $set: { [`purchasePrices.${artist}`]: purchasePrice }, // Set purchase price
+      },
       { new: true } // Return the updated document
     );
 
@@ -88,6 +143,7 @@ router.post('/update-assets', authMiddleware, async (req, res) => {
   }
 });
 
+// Get Assets Endpoint
 router.get('/assets', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user);
@@ -102,6 +158,7 @@ router.get('/assets', authMiddleware, async (req, res) => {
   }
 });
 
+// Portfolio Value Endpoint
 router.get('/portfolio-value', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user);
@@ -109,29 +166,35 @@ router.get('/portfolio-value', authMiddleware, async (req, res) => {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    // Fetch artist coin values (replace this with your actual logic to fetch values)
-    const artistValues = {
-      'Taylor Swift': 10,
-      'Drake': 15,
-      'The Weeknd': 12,
-      'Beyonce': 20,
-      'Ed Sheeran': 8,
-      'BTS': 25,
-      'Olivia Rodrigo': 18,
-      'Doja Cat': 14,
-      'Bad Bunny': 22,
-      'Billie Eilish': 16,
-      'Travis Scott': 19,
-      'Ariana Grande': 21,
-    };
-
-    // Calculate portfolio value
+    // Fetch latest artist prices
+    let portfolioBreakdown = [];
     let totalValue = 0;
-    for (const [artist, coins] of user.assets) {
-      totalValue += coins * (artistValues[artist] || 0);
+
+    for (const [artist, coins] of Object.entries(user.assets)) {
+      const artistId = artistIdMap[artist];
+      if (!artistId) continue;
+
+      const priceData = await fetchArtistPrice(artistId);
+      if (!priceData) continue;
+
+      const currentPrice = priceData.price;
+      const value = coins * currentPrice;
+
+      const purchasePrice = user.purchasePrices?.[artist] || currentPrice; // Default to current if no purchase price stored
+      const percentChange = purchasePrice ? ((currentPrice - purchasePrice) / purchasePrice) * 100 : 0;
+
+      portfolioBreakdown.push({
+        artist,
+        coins,
+        currentPrice,
+        totalValue: value,
+        percentChange,
+      });
+
+      totalValue += value;
     }
 
-    res.json({ totalValue });
+    res.json({ totalValue, portfolio: portfolioBreakdown });
   } catch (err) {
     console.error("Portfolio value error:", err);
     res.status(500).json({ msg: "Server error during portfolio calculation" });
