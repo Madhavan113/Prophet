@@ -1,9 +1,10 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchSpotifyArtistImage } from "./spotify.js";
 
 const Markets = () => {
-  const navigate = useNavigate(); // Hook to navigate between pages
+  const navigate = useNavigate();
 
   const [artistCoins, setArtistCoins] = useState([
     { id: 1, name: "Taylor Swift", symbol: "SWIFT", price: "43,567.89", change: "+5.2" },
@@ -33,23 +34,51 @@ const Markets = () => {
     };
 
     updateArtistImages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Separate refs for each scroll container
+  // Poll backend to update dynamic coin prices
+  useEffect(() => {
+    const fetchPrices = async () => {
+      const updatedArtists = await Promise.all(
+        artistCoins.map(async (artist) => {
+          try {
+            // Update the URL and port if needed based on your backend configuration
+            const res = await fetch(`http://localhost:5005/api/prices/${artist.id}/price`);
+            if (!res.ok) throw new Error("Network error");
+            const data = await res.json();
+            return { ...artist, price: data.price, change: data.priceChange };
+          } catch (error) {
+            console.error(`Error fetching price for ${artist.name}:`, error);
+            return artist;
+          }
+        })
+      );
+      setArtistCoins(updatedArtists);
+    };
+
+    fetchPrices();
+    const intervalId = setInterval(fetchPrices, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(intervalId);
+  }, [artistCoins]);
+
+  // Refs for scrolling containers
   const scrollRef1 = useRef();
   const scrollRef2 = useRef();
 
   const handleCardClick = (symbol) => {
-    navigate(`/coin-graph/${symbol}`); // Navigate to the coin's graph page using symbol
+    navigate(`/coin-graph/${symbol}`);
   };
 
-  // Function to scroll left automatically
+  // Automatic horizontal scroll for two containers
   useEffect(() => {
     const intervalId1 = setInterval(() => {
       if (scrollRef1.current) {
         const card = scrollRef1.current.querySelector(".flex-shrink-0");
         if (card) {
-          const cardWidth = card.offsetWidth + parseInt(getComputedStyle(card).marginRight, 10);
+          const cardWidth =
+            card.offsetWidth + parseInt(getComputedStyle(card).marginRight, 10);
           const scrollWidth = scrollRef1.current.scrollWidth;
           const scrollLeft = scrollRef1.current.scrollLeft;
           const clientWidth = scrollRef1.current.clientWidth;
@@ -67,7 +96,8 @@ const Markets = () => {
       if (scrollRef2.current) {
         const card = scrollRef2.current.querySelector(".flex-shrink-0");
         if (card) {
-          const cardWidth = card.offsetWidth + parseInt(getComputedStyle(card).marginRight, 10);
+          const cardWidth =
+            card.offsetWidth + parseInt(getComputedStyle(card).marginRight, 10);
           const scrollWidth = scrollRef2.current.scrollWidth;
           const scrollLeft = scrollRef2.current.scrollLeft;
           const clientWidth = scrollRef2.current.clientWidth;
@@ -87,10 +117,72 @@ const Markets = () => {
     };
   }, []);
 
+  // ----- Chat Functionality -----
+  const [chatMessages, setChatMessages] = useState([
+    { id: 1, user: "Bot", text: "Welcome to the market chat!" },
+  ]);
+  const [chatInput, setChatInput] = useState("");
+  const chatEndRef = useRef(null);
+
+  // Predefined bot messages (including one like "Taylor Swift is trash")
+  const botMessages = [
+    "Taylor Swift is trash",
+    "Drake is overrated",
+    "The Weeknd is fire!",
+    "Beyoncé always slays",
+    "Ed Sheeran's vibe is chill",
+    "BTS are too mainstream",
+    "Olivia Rodrigo is the future",
+    "Doja Cat is wild!",
+    "Bad Bunny is unbeatable",
+    "Billie Eilish brings a unique style",
+  ];
+
+  // Function to scroll chat to bottom
+  const scrollChatToBottom = () => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  // Send user message
+  const handleSendMessage = () => {
+    if (chatInput.trim() !== "") {
+      const newMessage = {
+        id: crypto.randomUUID(),
+        user: "You",
+        text: chatInput,
+      };
+      setChatMessages((prev) => [...prev, newMessage]);
+      setChatInput("");
+    }
+  };
+
+  // Auto bot: add a bot message every 10 seconds
+  useEffect(() => {
+    const botInterval = setInterval(() => {
+      const randomMsg = botMessages[Math.floor(Math.random() * botMessages.length)];
+      const newBotMessage = {
+        id: crypto.randomUUID(),
+        user: "Bot",
+        text: randomMsg,
+      };
+      setChatMessages((prev) => [...prev, newBotMessage]);
+    }, 10000);
+
+    return () => clearInterval(botInterval);
+  }, []);
+
+  // Scroll to bottom when new chat messages appear
+  useEffect(() => {
+    scrollChatToBottom();
+  }, [chatMessages]);
+  // ----- End of Chat Functionality -----
+
   return (
     <div className="fixed inset-0 min-h-screen w-full bg-black">
       <div className="relative min-h-screen w-full">
-        <nav className="bg-gray-900 border-b border-gray-800">
+        <nav className="bg-black border-b border-black">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center">
@@ -104,10 +196,6 @@ const Markets = () => {
 
         <div className="overflow-y-auto" style={{ height: "calc(100vh - 4rem)" }}>
           <div className="mx-auto p-8 max-w-7xl">
-            <div className="flex items-center justify-between mb-8">
-              <h1 className="text-3xl font-bold text-white"></h1>
-            </div>
-
             <div className="space-y-12">
               {/* Top Artists */}
               <div>
@@ -119,8 +207,8 @@ const Markets = () => {
                   {artistCoins.slice(0, 10).map((artist) => (
                     <div
                       key={artist.id}
-                      onClick={() => handleCardClick(artist.symbol)} // Navigate to the artist's graph page
-                      className="flex-shrink-0 w-40 p-4 bg-gray-800 rounded-lg shadow-md cursor-pointer hover:bg-gray-700"
+                      onClick={() => handleCardClick(artist.symbol)}
+                      className="flex-shrink-0 w-40 p-4 bg-black rounded-lg shadow-md cursor-pointer hover:bg-gray-900"
                     >
                       <img
                         src={artist.image}
@@ -148,8 +236,8 @@ const Markets = () => {
                   {artistCoins.slice(2, 12).map((artist) => (
                     <div
                       key={artist.id}
-                      onClick={() => handleCardClick(artist.symbol)} // Navigate to the artist's graph page
-                      className="flex-shrink-0 w-40 p-4 bg-gray-800 rounded-lg shadow-md cursor-pointer hover:bg-gray-700"
+                      onClick={() => handleCardClick(artist.symbol)}
+                      className="flex-shrink-0 w-40 p-4 bg-black rounded-lg shadow-md cursor-pointer hover:bg-gray-900"
                     >
                       <img
                         src={artist.image}
@@ -167,6 +255,36 @@ const Markets = () => {
                 </div>
               </div>
 
+              {/* Chat Section */}
+              <div className="bg-black rounded-lg p-4 border border-black mt-8">
+                <h2 className="text-xl font-semibold text-white mb-4">Market Chat</h2>
+                <div className="h-64 overflow-y-auto bg-black p-2 rounded-md mb-4">
+                  {chatMessages.map((msg) => (
+                    <div key={msg.id} className="mb-2">
+                      <span className="font-bold text-white">{msg.user}: </span>
+                      <span className="text-gray-300">{msg.text}</span>
+                    </div>
+                  ))}
+                  <div ref={chatEndRef} />
+                </div>
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    className="w-full p-2 rounded-md bg-black text-white outline-none border border-gray-700"
+                    placeholder="Type your message..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                  />
+                  <button
+                    className="p-2 bg-purple-600 rounded-md text-white"
+                    onClick={handleSendMessage}
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
+              {/* End Chat Section */}
             </div>
           </div>
         </div>
