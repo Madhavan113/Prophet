@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
+
 // Sample data - replace with actual API data
 const generateMockData = (days) => {
   const data = [];
@@ -32,17 +33,15 @@ const mockHoldings = [
   { coin: 'Ariana Grande', symbol: 'GRANDE', amount: (Math.random() * (3257 - 0.32) + 0.32).toFixed(2), value: 67.89, change: 20.7 }
 ];
 
-
-
 const PortfolioDashboard = () => {
   const navigate = useNavigate(); 
   const handleCardClick = (symbol) => {
     navigate(`/coin-graph/${symbol}`); // Navigate to the coin's graph page using symbol
   };
+
   const [timeframe, setTimeframe] = useState('3M');
   const timeframes = {
     '3M': 90,
-
     '1Y': 365,
     '5Y': 1825,
     'ALL': 2555
@@ -55,7 +54,7 @@ const PortfolioDashboard = () => {
   const isChartProfitable = chartData[chartData.length - 1].value > chartData[0].value;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white w-screen overflow-x-hidden">
+    <div className="min-h-screen bg-black text-white w-screen overflow-x-hidden">
       <div className="pt-16 w-full max-w-full">
         {/* Portfolio Value Header */}
         <div className="mb-8 px-6">
@@ -133,9 +132,11 @@ const PortfolioDashboard = () => {
           <h2 className="text-xl font-semibold mb-6">Current Holdings</h2>
           <div className="grid gap-4">
             {mockHoldings.map((holding) => (
-              <div key={holding.symbol} 
-              className="hover:bg-gray-600 bg-gray-700 rounded-lg p-4 flex items-center justify-between cursor-pointer"
-              onClick={() => handleCardClick(holding.symbol)}>
+              <div 
+                key={holding.symbol} 
+                className="hover:bg-gray-600 bg-gray-700 rounded-lg p-4 flex items-center justify-between cursor-pointer"
+                onClick={() => handleCardClick(holding.symbol)}
+              >
                 <div className="flex items-center space-x-4">
                   <div className="bg-gray-600 p-2 rounded-lg">
                     <DollarSign className="w-6 h-6 text-purple-400" />
