@@ -1,61 +1,112 @@
 import React from 'react';
-import { Home, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Navbar = () => {
+  const commonStyle = {
+    fontFamily: "'Avenir Next LT Pro', sans-serif",
+    color: 'white',
+    textTransform: 'uppercase',
+    letterSpacing: '0.2em',
+    fontSize: '15px',
+    fontWeight: 'bold',
+    transition: 'all 0.3s ease',
+  };
+
   return (
-    <nav className="bg-gray-900 border-b border-gray-800 w-full fixed top-0 left-0 right-0 z-50">
+    <nav className="bg-black border-b border-gray-700 w-full fixed top-0 left-0 right-0 z-50">
       <div className="w-full px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Left side - Prophet with white-to-pink gradient */}
+          {/* Left side - Smaller Lambda PROPHET. Logo (Bold + White) */}
           <Link
             to="/"
-            className="text-xl font-bold bg-gradient-to-r from-white to-pink-500 bg-clip-text text-transparent"
-            style={{
-              WebkitTextFillColor: 'transparent', // Ensures the gradient is visible
-              textDecoration: 'none', // Removes default link styling
-            }}
+            className="flex items-center space-x-1"
+            style={commonStyle}
           >
-            Prophet
+            <span
+              className="text-white font-mono"
+              style={{
+                fontSize: '24px', // Larger size for the lambda
+                fontWeight: 'bold',
+                marginRight: '4px', // Space between lambda and text
+                lineHeight: '1', // Aligns lambda with the text
+              }}
+            >
+              λ
+            </span>
+            <span
+              className="tracking-[0.2em] typewriter"
+              style={{
+                overflow: 'hidden', // Ensures the text doesn't overflow
+                whiteSpace: 'nowrap', // Keeps the text in one line
+                borderRight: '2px solid white', // Cursor effect
+                animation: 'typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite',
+              }}
+            >
+              PROPHET.
+            </span>
           </Link>
 
-          {/* Middle - Markets tab */}
+          {/* Middle - Markets tab (Bold + White) */}
           <Link
             to="/markets"
-            className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent"
-            style={{
-              WebkitTextFillColor: 'transparent', // Forces the text to be transparent
-              textDecoration: 'none', // Removes default link styling
-            }}
+            className="hover:opacity-80"
+            style={commonStyle}
           >
             Markets
           </Link>
 
-          {/* Right side - Login Link */}
+          {/* Right side - Profit (Bold + White) */}
+          <Link
+            to="/about"
+            className="hover:opacity-80"
+            style={commonStyle}
+          >
+            Portfolio
+          </Link>
+
+          {/* Right side - Login Button (Styled with border and padding) */}
           <Link
             to="/login"
-            className="text-xl font-bold bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent"
+            className="hover:opacity-80"
             style={{
-              WebkitTextFillColor: 'transparent', // Ensures the gradient is visible
-              textDecoration: 'none', // Removes default link styling
+              ...commonStyle,
+              padding: '8px 16px', // Added padding
+              border: '1px solid white', // Added border
+              borderRadius: '4px', // Rounded corners
             }}
           >
             Login
           </Link>
-
-          {/* Right side - Profit with green-to-teal gradient */}
-          <Link
-            to="/about"
-            className="text-xl font-bold bg-gradient-to-r from-green-400 to-teal-600 bg-clip-text text-transparent"
-            style={{
-              WebkitTextFillColor: 'transparent', // Forces the text to be transparent
-              textDecoration: 'none', // Removes default link styling
-            }}
-          >
-            Profit
-          </Link>
         </div>
       </div>
+
+      {/* Add CSS for the typewriter animation */}
+      <style>
+        {`
+          @keyframes typing {
+            from {
+              width: 0;
+            }
+            to {
+              width: 100%;
+            }
+          }
+
+          @keyframes blink-caret {
+            from, to {
+              border-color: transparent;
+            }
+            50% {
+              border-color: white;
+            }
+          }
+
+          .typewriter {
+            display: inline-block;
+            animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+          }
+        `}
+      </style>
     </nav>
   );
 };
