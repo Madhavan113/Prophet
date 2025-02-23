@@ -1,60 +1,28 @@
 {
   "name": "backend",
   "version": "1.0.0",
-<<<<<<< HEAD
   "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "seed": "node scripts/seedOrderbook.js"
-=======
-  "main": "index.js",
-  "scripts": {
-<<<<<<<< HEAD:backend/package.json
-    "test": "echo \"Error: no test specified\" && exit 1"
-========
-    "start": "node server.js",
-    "dev": "nodemon server.js",
     "seed": "node scripts/seedOrderbook.js",
     "bot-trading": "node scripts/tradingBot.js",
     "match-trading": "node scripts/runMatcher.js"
->>>>>>>> live-orderbook:bookpricer/backend/package.json
->>>>>>> live-orderbook
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-<<<<<<< HEAD
   "dependencies": {
     "axios": "^1.7.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "mongoose": "^8.10.1",
-    "morgan": "^1.10.0",
-    "socket.io": "^4.8.1"
-  },
-  "description": ""
-=======
-  "description": "",
-  "dependencies": {
-    "bcryptjs": "^3.0.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
     "ethers": "^6.13.5",
     "express": "^4.21.2",
-    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.1",
-<<<<<<<< HEAD:backend/package.json
-    "nodemailer": "^6.10.0"
-  }
-========
     "morgan": "^1.10.0",
     "socket.io": "^4.8.1",
     "ws": "^8.18.1"
   },
   "description": ""
->>>>>>>> live-orderbook:bookpricer/backend/package.json
->>>>>>> live-orderbook
 }

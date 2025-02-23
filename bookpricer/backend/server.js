@@ -1,5 +1,4 @@
 // server.js
-<<<<<<< HEAD
 import express from "express";
 import dotenv from "dotenv";
 import { connect } from "./config/db.js";
@@ -7,23 +6,16 @@ import { initializeWebSocket } from './utils/websocket.utils.js';
 import cors from 'cors';
 import morgan from 'morgan';
 
-=======
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-
-<<<<<<<< HEAD:backend/server.js
-const app = express();
-========
->>>>>>> live-orderbook
 // Import routes
 import bigRoutes from "./routes/product.route.js";
 import orderbookRoutes from "./routes/orderbook.route.js";
 
-<<<<<<< HEAD
+
+
 dotenv.config();
 const app = express();
+
+
 const PORT = process.env.PORT || 5000;
 
 console.log('MONGO_URI:', process.env.MONGO_URI);
@@ -77,31 +69,3 @@ process.on('uncaughtException', (err) => {
 });
 
 export default app;
-=======
-
-
-dotenv.config();
-const app = express();
-
-
-const PORT = process.env.PORT || 5000;
-
-console.log('MONGO_URI:', process.env.MONGO_URI);
->>>>>>>> live-orderbook:bookpricer/backend/server.js
-
-// Middleware
-app.use(express.json());
-app.use(cors());
-
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected successfully"))
-  .catch(err => console.error("MongoDB connection error:", err));
-
-// Routes
-app.use('/api/auth', require('./routes/auth'));
-
-// Start Server
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
->>>>>>> live-orderbook
