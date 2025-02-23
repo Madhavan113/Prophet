@@ -28,11 +28,43 @@ const MusicCryptoDashboard = () => {
 
   // Update body styles on mount and cleanup on unmount
   useEffect(() => {
-    fetchCoinPriceData(); // Fetch data on component mount
-  }, []); // Empty dependency array to run it once on mount
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    document.body.style.minHeight = '100vh';
+    document.body.style.backgroundColor = '#0a0a0a'; // Dark fallback
 
-  // Determine if the price has gone up or down
-  const isProfitable = coinPriceData.length > 0 && coinPriceData[coinPriceData.length - 1].price > coinPriceData[0].price;
+    return () => {
+      document.body.style.margin = '';
+      document.body.style.padding = '';
+      document.body.style.minHeight = '';
+      document.body.style.backgroundColor = '';
+    };
+  }, []);
+
+  // Function to send order data to the API
+  const sendOrder = async (orderData) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/orderbook/order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to place order');
+      }
+
+      const result = await response.json();
+      console.log('Order successfully placed:', result);
+      setAction(`Order placed: ${orderData.type} ${orderData.amount} units of ${orderData.coinPair}`);
+    } catch (error) {
+      console.error('Error placing order:', error);
+      setAction(`Failed to place order: ${error.message}`);
+    }
+  };
 
   // Handlers for Buy and Sell buttons
   const handleBuy = () => {
@@ -40,8 +72,17 @@ const MusicCryptoDashboard = () => {
       setAction('Please enter a valid amount to buy');
       return;
     }
-    setAction(`Buying ${buyAmount} units of ${id}`);
-    console.log(`Buying ${buyAmount} units of ${id}`);
+
+    const orderData = {
+      type: 'BUY',
+      coinPair: id, // Use the coin ID from the URL
+      price: coinPriceData[coinPriceData.length - 1].price, // Use the latest price
+      amount: parseFloat(buyAmount),
+      userId: '67ba4f2338434f902d054c58', // Replace with actual user ID (e.g., from authentication)
+      status: 'OPEN',
+    };
+
+    sendOrder(orderData);
     setBuyAmount(''); // Clear the input after action
   };
 
@@ -50,8 +91,17 @@ const MusicCryptoDashboard = () => {
       setAction('Please enter a valid amount to sell');
       return;
     }
-    setAction(`Selling ${sellAmount} units of ${id}`);
-    console.log(`Selling ${sellAmount} units of ${id}`);
+
+    const orderData = {
+      type: 'SELL',
+      coinPair: id, // Use the coin ID from the URL
+      price: coinPriceData[coinPriceData.length - 1].price, // Use the latest price
+      amount: parseFloat(sellAmount),
+      userId: '67ba4f2338434f902d054c58', // Replace with actual user ID (e.g., from authentication)
+      status: 'OPEN',
+    };
+
+    sendOrder(orderData);
     setSellAmount(''); // Clear the input after action
   };
 
