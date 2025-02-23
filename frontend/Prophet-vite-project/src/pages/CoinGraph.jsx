@@ -28,18 +28,11 @@ const MusicCryptoDashboard = () => {
 
   // Update body styles on mount and cleanup on unmount
   useEffect(() => {
-    document.body.style.margin = '0';
-    document.body.style.padding = '0';
-    document.body.style.minHeight = '100vh';
-    document.body.style.backgroundColor = '#0a0a0a'; // Dark fallback
+    fetchCoinPriceData(); // Fetch data on component mount
+  }, []); // Empty dependency array to run it once on mount
 
-    return () => {
-      document.body.style.margin = '';
-      document.body.style.padding = '';
-      document.body.style.minHeight = '';
-      document.body.style.backgroundColor = '';
-    };
-  }, []);
+  // Determine if the price has gone up or down
+  const isProfitable = coinPriceData.length > 0 && coinPriceData[coinPriceData.length - 1].price > coinPriceData[0].price;
 
   // Handlers for Buy and Sell buttons
   const handleBuy = () => {
