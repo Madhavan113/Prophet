@@ -30,7 +30,7 @@ root.render(
           <Route path="/login" element={<Login />} /> 
           <Route path="/coin-graph/:id" element={<CoinGraph />} />
           {/* <Route path="/wall" element={<Wall />} /> */}
-          <Route path="/register/:id" element={<Register />} />
+          <Route path="/register" element={<Register />} />
           {/* <Route path="/settings" element={<Settings />} /> Settings page */}
           {/* <Route path="/profile" element={<Profile />} /> Profile page */}
         </Routes>
