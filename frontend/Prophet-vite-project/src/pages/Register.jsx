@@ -16,7 +16,7 @@ const Register = () => {
         </div>
 
         <form className="space-y-6">
-          {/* Username Field */}
+          {/* Username Field (First for Login) */}
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-300">
               Username
@@ -33,7 +33,7 @@ const Register = () => {
             </div>
           </div>
 
-          {/* Email Field */}
+          {/* Email Field (For Authentication) */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-300">
               Email Address
@@ -62,15 +62,15 @@ const Register = () => {
                 name="password"
                 autoComplete="new-password"
                 required
-                className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-500 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                className="appearance-none block w-3/4 px-3 py-2 pr-12 border border-gray-500 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-white focus:outline-none focus:ring-purple-500 focus:border-purple-500"
               />
               {/* Show/Hide Password Button */}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-3 flex items-center bg-transparent border-none text-gray-400 hover:text-white"
+                className="absolute inset-y-0 right-0 flex items-center text-gray-400 hover:text-white focus:outline-none bg-gray-600 hover:bg-gray-500 px-2 py-1 rounded-md"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
               </button>
             </div>
           </div>
@@ -79,7 +79,7 @@ const Register = () => {
           <div>
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+              className="w-full py-2 px-4 border border-transparent rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:ring-2 focus:ring-purple-500"
             >
               Sign Up
             </button>

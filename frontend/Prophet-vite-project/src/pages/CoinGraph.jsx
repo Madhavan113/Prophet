@@ -2,39 +2,55 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom'; // To get the dynamic route params
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
+// Function to simulate async fetching of test data
+const getTestData = async () => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([
+        { time: '2024-02-01', price: 50 },
+        { time: '2024-02-02', price: 52 },
+        { time: '2024-02-03', price: 55 },
+        { time: '2024-02-04', price: 54 },
+        { time: '2024-02-05', price: 79 },
+        { time: '2024-02-06', price: 111 },
+        { time: '2024-02-07', price: 444 },
+      ]);
+    }, 1000); // Simulate a 1-second delay to fetch data
+  });
+};
+
 const MusicCryptoDashboard = () => {
   const { id } = useParams(); // Retrieve the dynamic 'id' parameter from the route
 
   // Mock data for the price of the coin over time (replace with actual data for real use)
-  const [coinPriceData, setCoinPriceData] = useState([
-    { time: '2024-02-01', price: 50 },
-    { time: '2024-02-02', price: 52 },
-    { time: '2024-02-03', price: 55 },
-    { time: '2024-02-04', price: 54 },
-    { time: '2024-02-05', price: 79 },
-    { time: '2024-02-06', price: 111 },
-    { time: '2024-02-07', price: 444 },
-  ]);
-
-  // Determine if the price has gone up or down
-  const isProfitable = coinPriceData[coinPriceData.length - 1].price > coinPriceData[0].price;
+  // State to store coin price data
+  const [coinPriceData, setCoinPriceData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // Loading state to handle async fetching
+  const [error, setError] = useState(null); // Error state for handling issues with fetching data
 
   // State for Buy/Sell actions
   const [action, setAction] = useState(null);
+  const fetchCoinPriceData = async () => {
+    try {
+      setIsLoading(true); // Set loading to true before fetching
+
+      // Fetch data using the async getTestData function
+      const data = await getTestData();
+
+      setCoinPriceData(data); // Set the coin price data from the response
+    } catch (err) {
+      setError(err.message); // Set error message if something goes wrong
+    } finally {
+      setIsLoading(false); // Set loading to false after fetching
+    }
+  };
 
   useEffect(() => {
-    document.body.style.margin = '0';
-    document.body.style.padding = '0';
-    document.body.style.minHeight = '100vh';
-    document.body.style.backgroundColor = '#0a0a0a'; // Dark fallback
+    fetchCoinPriceData(); // Fetch data on component mount
+  }, []); // Empty dependency array to run it once on mount
 
-    return () => {
-      document.body.style.margin = '';
-      document.body.style.padding = '';
-      document.body.style.minHeight = '';
-      document.body.style.backgroundColor = '';
-    };
-  }, []);
+  // Determine if the price has gone up or down
+  const isProfitable = coinPriceData.length > 0 && coinPriceData[coinPriceData.length - 1].price > coinPriceData[0].price;
 
   // Handlers for Buy and Sell buttons
   const handleBuy = () => {
@@ -115,23 +131,22 @@ const MusicCryptoDashboard = () => {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
+{/* Action Buttons (Buy / Sell) */}
+<div className="flex justify-center mt-8 space-x-4">
+              <button
+                onClick={handleBuy}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-300"
+              >
+                Buy
+              </button>
+              <button
+                onClick={handleSell}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-300"
+              >
+                Sell
+              </button>
+            </div>
 
-            {/* Action Buttons (Buy / Sell) */}
-            <div className="flex space-x-4 mt-6">
-  {/* Buy Button */}
-  <button
-    className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-300"
-  >
-    Buy
-  </button>
-
-  {/* Sell Button */}
-  <button
-    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-300"
-  >
-    Sell
-  </button>
-</div>
 
             {/* Action Status */}
             {action && (
