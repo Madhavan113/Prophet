@@ -14,7 +14,7 @@ console.log('Looking for .env file at:', envPath);
 const result = dotenv.config({ path: envPath });
 console.log('Dotenv result:', result);
 console.log('MONGODB_URI:', process.env.MONGODB_URI);
-
+//commit bait
 // Schema Definition
 const priceSchema = new mongoose.Schema({
     ticker: {
