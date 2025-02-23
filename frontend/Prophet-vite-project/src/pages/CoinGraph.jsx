@@ -45,6 +45,7 @@ const MusicCryptoDashboard = () => {
     }
   };
 
+  // Update body styles on mount and cleanup on unmount
   useEffect(() => {
     fetchCoinPriceData(); // Fetch data on component mount
   }, []); // Empty dependency array to run it once on mount
@@ -54,13 +55,41 @@ const MusicCryptoDashboard = () => {
 
   // Handlers for Buy and Sell buttons
   const handleBuy = () => {
-    setAction('Buying');
-    console.log('User clicked Buy');
+    if (!buyAmount || isNaN(buyAmount) || buyAmount <= 0) {
+      setAction('Please enter a valid amount to buy');
+      return;
+    }
+
+    const orderData = {
+      type: 'BUY',
+      coinPair: id, // Use the coin ID from the URL
+      price: coinPriceData[coinPriceData.length - 1].price, // Use the latest price
+      amount: parseFloat(buyAmount),
+      userId: '67ba4f2338434f902d054c58', // Replace with actual user ID (e.g., from authentication)
+      status: 'OPEN',
+    };
+
+    sendOrder(orderData);
+    setBuyAmount(''); // Clear the input after action
   };
 
   const handleSell = () => {
-    setAction('Selling');
-    console.log('User clicked Sell');
+    if (!sellAmount || isNaN(sellAmount) || sellAmount <= 0) {
+      setAction('Please enter a valid amount to sell');
+      return;
+    }
+
+    const orderData = {
+      type: 'SELL',
+      coinPair: id, // Use the coin ID from the URL
+      price: coinPriceData[coinPriceData.length - 1].price, // Use the latest price
+      amount: parseFloat(sellAmount),
+      userId: '67ba4f2338434f902d054c58', // Replace with actual user ID (e.g., from authentication)
+      status: 'OPEN',
+    };
+
+    sendOrder(orderData);
+    setSellAmount(''); // Clear the input after action
   };
 
   return (
@@ -84,9 +113,7 @@ const MusicCryptoDashboard = () => {
           <div className="mx-auto p-8 max-w-7xl">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
-              <h1 className="text-3xl font-bold text-white">
-                {id}
-              </h1>
+              <h1 className="text-3xl font-bold text-white">{id}</h1>
             </div>
 
             {/* Display the ID */}
@@ -107,20 +134,24 @@ const MusicCryptoDashboard = () => {
                   <defs>
                     {/* Gradient for profitable areas */}
                     <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/> {/* Green */}
-                      <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} /> {/* Green */}
+                      <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                     </linearGradient>
                     {/* Gradient for non-profitable areas */}
                     <linearGradient id="colorLoss" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8}/> {/* Red */}
-                      <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8} /> {/* Red */}
+                      <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  {/* Remove Grid lines */}
-                  {/* <CartesianGrid strokeDasharray="3 3" stroke="#ccc" /> */}
                   <XAxis dataKey="time" stroke="#fff" />
                   <YAxis stroke="#fff" />
-                  <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '8px' }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1F2937',
+                      border: 'none',
+                      borderRadius: '8px',
+                    }}
+                  />
                   <Area
                     type="monotone"
                     dataKey="price"
@@ -150,8 +181,10 @@ const MusicCryptoDashboard = () => {
 
             {/* Action Status */}
             {action && (
-              <div className="mt-6 text-center text-white text-lg">
-                <p>{action} action initiated!</p>
+              <div className="mt-6 text-center">
+                <p className="text-white text-lg bg-gray-800/50 backdrop-blur-sm rounded-xl p-4">
+                  {action}
+                </p>
               </div>
             )}
           </div>
