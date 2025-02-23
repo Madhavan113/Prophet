@@ -109,9 +109,9 @@ const Markets = () => {
             </div>
 
             <div className="space-y-12">
-              {/* Trending Artists */}
+              {/* Top Artists */}
               <div>
-                <h2 className="text-2xl font-semibold text-white mb-4">Trending Artists</h2>
+                <h2 className="text-2xl font-semibold text-white mb-4">Top Artists</h2>
                 <div
                   className="flex overflow-x-auto space-x-4 py-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700"
                   ref={scrollRef1}
@@ -138,9 +138,9 @@ const Markets = () => {
                 </div>
               </div>
 
-              {/* Top Artists */}
+              {/* Trending Artists */}
               <div>
-                <h2 className="text-2xl font-semibold text-white mb-4">Top Artists</h2>
+                <h2 className="text-2xl font-semibold text-white mb-4">Trending Artists</h2>
                 <div
                   className="flex overflow-x-auto space-x-4 py-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700"
                   ref={scrollRef2}
